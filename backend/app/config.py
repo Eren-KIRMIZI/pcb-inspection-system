@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     app_name: str = "PCB Inspection API"
     api_prefix: str = "/api/v1"
+    data_dir: Path = BASE_DIR / "data"
     upload_dir: Path = BASE_DIR / "data" / "uploads"
     results_dir: Path = BASE_DIR / "data" / "results"
     max_upload_mb: int = 20

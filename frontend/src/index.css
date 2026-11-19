@@ -32,3 +32,93 @@
   border-radius: 12px;
   background: #111827;
 }
+
+.upload-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+button {
+  padding: 0.6rem 1.2rem;
+  border: 0;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #334155;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #f87171;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.badge-pass {
+  background: #14532d;
+  color: #86efac;
+}
+
+.badge-fail {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.badge-manual_review {
+  background: #78350f;
+  color: #fcd34d;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 1rem 0 2rem;
+}
+
+.annotated-image {
+  width: 100%;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+}
+
+.chart {
+  min-height: 220px;
+}
+
+.defect-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.defect-table th,
+.defect-table td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #1e293b;
+  text-align: left;
+}
+
+.defect-table th {
+  color: #94a3b8;
+  font-weight: 600;
+}
