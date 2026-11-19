@@ -78,4 +78,11 @@ Bu pakette çözülenler:
 - **D10:** `GET /api/v1/status` API, kusur modeli, komponent modeli, depolama ve veritabanı durumlarını model yüklemeden raporluyor; dashboard gerçek kaynakları gösteriyor.
 - **D13:** Dashboard'da 7/30/90/özel dönem seçici, önceki dönem delta göstergeleri ve dönem boşsa ayrı bilgilendirme eklendi.
 
-Kalanlar sırayla motor paketinde ele alınacak: D2 (16), D3 (17-18), D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.
+### Adım 16 — hizalama güveni (`feat: improve PCB image alignment`)
+
+- **D2 (kısmen):** `align_images()` artık `AlignmentResult(matrix, inlier_count, inlier_ratio, scale, rotation_deg, trusted, reason)` döndürüyor. RANSAC sonrası inlier sayısı/oranı, ölçek ve genel hizalama açısı hesaplanıyor; eşik altı homografiler `trusted=False` oluyor ve koordinat karşılaştırması normalize koordinatlara düşüyor. Karar motoru bu durumu `REFERENCE_ALIGNMENT_FAILED` / MANUAL_REVIEW olarak raporluyor.
+- Önbellek anahtarı dosya yolu + mtime + boyut; referans görüntüsü değiştiğinde eski homografi kullanılmıyor.
+- `rotation_deg` yalnızca kartın global hizalama açısıdır; komponent rotasyonu/rotation_error ölçümü değildir (D4 kapsam dışı kararı korundu).
+- Gerçek referans + gerçek yüklenen görsel çiftinde: 5042 inlier, inlier oranı 1.00, ölçek 1.00, güvenilir. 5 yeni test eklendi (46 test toplam).
+
+Kalanlar sırayla ele alınacak: D3 (17-18), D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.

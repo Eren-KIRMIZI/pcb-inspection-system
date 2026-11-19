@@ -91,12 +91,19 @@ def _reference_reasons(check: ReferenceCheck) -> list[DecisionReason]:
     reasons: list[DecisionReason] = []
 
     if not check.aligned:
+        detail = ""
+        if check.alignment is not None:
+            detail = (
+                f" (inlier %{check.alignment.inlier_ratio * 100:.0f}, "
+                f"neden: {check.alignment.reason})"
+            )
         reasons.append(
             _reason(
                 "REFERENCE_ALIGNMENT_FAILED",
                 "medium",
                 "reference",
-                "Referans ile test görseli hizalanamadı; koordinat karşılaştırması güvenilir değil.",
+                "Referans ile test görseli güvenilir şekilde hizalanamadı; "
+                f"koordinat karşılaştırması güvenilir değil{detail}.",
             )
         )
 

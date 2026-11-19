@@ -40,9 +40,19 @@ export interface ReferenceIssue {
   y: number | null
 }
 
+export interface AlignmentInfo {
+  trusted: boolean
+  inlier_count: number
+  inlier_ratio: number
+  scale: number | null
+  rotation_deg: number | null
+  reason: string
+}
+
 export interface ReferenceCheck {
   reference: string
   aligned: boolean
+  alignment: AlignmentInfo | null
   expected_count: number
   raw_component_detections: number
   qualified_component_detections: number

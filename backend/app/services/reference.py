@@ -7,7 +7,13 @@ import numpy as np
 
 from ..config import BASE_DIR, settings
 from ..errors import ImageReadError
-from ..schemas import Detection, ReferenceBoard, ReferenceCheck, ReferenceIssue
+from ..schemas import (
+    AlignmentInfo,
+    Detection,
+    ReferenceBoard,
+    ReferenceCheck,
+    ReferenceIssue,
+)
 from .alignment import align_images
 from .components import get_component_detector
 
@@ -97,7 +103,16 @@ def compare_board(
 
     ref_h, ref_w = reference_image.shape[:2]
     target_h, target_w = target_image.shape[:2]
-    matrix = align_images(reference_image_path, target_path)
+    alignment = align_images(reference_image_path, target_path)
+    matrix = alignment.matrix if alignment.ok else None
+    alignment_info = AlignmentInfo(
+        trusted=alignment.ok,
+        inlier_count=alignment.inlier_count,
+        inlier_ratio=alignment.inlier_ratio,
+        scale=alignment.scale,
+        rotation_deg=alignment.rotation_deg,
+        reason=alignment.reason,
+    )
 
     if detections is None:
         detector = get_component_detector()
@@ -212,7 +227,8 @@ def compare_board(
 
     return ReferenceCheck(
         reference=reference.name,
-        aligned=matrix is not None,
+        aligned=alignment.ok,
+        alignment=alignment_info,
         expected_count=len(reference.components),
         raw_component_detections=len(detections),
         qualified_component_detections=len(qualified),

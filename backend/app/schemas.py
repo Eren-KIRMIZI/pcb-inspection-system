@@ -65,9 +65,25 @@ class ReferenceIssue(BaseModel):
     y: float | None = None
 
 
+class AlignmentInfo(BaseModel):
+    """Homografi hizalamasının güven bilgisi.
+
+    rotation_deg yalnızca kartın genel hizalama açısıdır; komponent rotasyonu
+    veya `rotation_error` tespiti değildir (desteklenmeyen bir kusur sınıfı).
+    """
+
+    trusted: bool
+    inlier_count: int
+    inlier_ratio: float
+    scale: float | None = None
+    rotation_deg: float | None = None
+    reason: str
+
+
 class ReferenceCheck(BaseModel):
     reference: str
     aligned: bool
+    alignment: AlignmentInfo | None = None
     expected_count: int
     raw_component_detections: int
     qualified_component_detections: int

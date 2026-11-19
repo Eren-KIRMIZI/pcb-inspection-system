@@ -35,6 +35,15 @@ class Settings(BaseSettings):
     reference_shift_distance_ratio: float = 0.015
     reference_component_min_confidence: float = 0.45
 
+    # SIFT + RANSAC hizalama güven eşikleri (AOI Engine 2.0 / adım 16)
+    alignment_min_inliers: int = 8
+    alignment_min_inlier_ratio: float = 0.35
+    alignment_ransac_threshold: float = 5.0
+    alignment_ratio_test: float = 0.75
+    alignment_min_scale: float = 0.20
+    alignment_max_scale: float = 5.0
+    alignment_cache_size: int = 128
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

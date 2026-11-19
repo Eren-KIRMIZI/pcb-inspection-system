@@ -81,10 +81,17 @@ function ReferenceSection({ result }: { result: InspectionResult }) {
     )
   }
 
+  const alignment = check.alignment
+  const alignmentDetail = alignment
+    ? `Ref: ${check.reference} · Hizalama: ${check.aligned ? 'güvenilir' : 'güvenilmez'} · ` +
+      `inlier %${(alignment.inlier_ratio * 100).toFixed(0)} (${alignment.inlier_count}) · ` +
+      `ölçek ${alignment.scale?.toFixed(2) ?? '—'} · neden: ${alignment.reason}`
+    : `Ref: ${check.reference} · Hizalama: ${check.aligned ? 'başarılı' : 'başarısız'}`
+
   return (
     <Card
       title="Referans / BOM Kontrolü"
-      subtitle={`Ref: ${check.reference} · Hizalama: ${check.aligned ? 'başarılı' : 'başarısız'}`}
+      subtitle={alignmentDetail}
     >
       <div className="mini-stats">
         <div><span>Beklenen</span><strong>{check.expected_count}</strong></div>
