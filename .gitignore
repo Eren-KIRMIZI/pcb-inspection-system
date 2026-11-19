@@ -23,6 +23,7 @@ data/*
 !data/samples/**
 datasets/
 models/
+runs/
 *.pt
 *.onnx
 *.engine
