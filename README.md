@@ -38,6 +38,40 @@ Fotoğraf tabanlı, yapay zekâ destekli PCB kalite kontrol sistemi.
 Araştırma ve seçim gerekçesi: [`docs/DATASETS.md`](docs/DATASETS.md)  
 Geliştirme planı: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
-## Geliştirme
+## Yerel Kurulum
 
-Kurulum adımları ilerleyen commit'lerde eklenecek. Veri setleri ve model ağırlıkları repo'ya eklenmeyecektir.
+Python 3.11+ ve Node.js 20+ önerilir.
+
+```powershell
+# Backend (proje kökünden)
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r backend\requirements-dev.txt
+uvicorn backend.app.main:app --reload --port 8000
+```
+
+```powershell
+# Frontend (ayrı terminal)
+cd frontend
+npm.cmd install
+npm.cmd run dev
+```
+
+Arayüz: http://localhost:5173 · API docs: http://localhost:8000/docs
+
+Testler:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest backend\tests -q
+```
+
+Model ağırlığı hazır olduğunda kök dizinde bir `.env` dosyası oluşturulur:
+
+```env
+MODEL_PATH=models/pcb-solder-defect-detection-yolo26/best.pt
+USE_MOCK_DETECTOR=false
+DEVICE=cpu
+CONF_THRESHOLD=0.25
+```
+
+Model ağırlığı yoksa sistem otomatik olarak mock detector ile çalışır; akış uçtan uca test edilebilir. Veri setleri ve model dosyaları `.gitignore` ile repo dışında tutulur.
