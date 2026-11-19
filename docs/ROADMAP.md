@@ -19,7 +19,14 @@ Her tamamlanan adım commit edilip remote'a push edilir.
 | 13 | Geçmiş/istatistik API'si, model/ayar/referans endpoint'leri, SQLite kayıt | `feat: add inspection history, overview stats and system endpoints` |
 | 14 | Endüstriyel koyu tema, hash router, 7 sayfa, zoom/pan görüntüleyici | `feat: add industrial AOI dashboard and inspection workspace` |
 | 15 | Ortak hata şeması, `X-Request-ID`, yapılandırılmış JSON log | `feat: add structured logging and standard API errors` |
-| 16 | (Sonraki) Eşleştirme iyileştirmeleri, tiling/SAHI, gerçek metrik değerlendirmesi | `feat: improve reference matching and evaluation` |
+| 16 | Hizalama güveni: SIFT/RANSAC inlier/oran/ölçek/açı, önbellek, MANUAL_REVIEW | `feat: improve PCB image alignment` |
+| 17 | Global komponent eşleştirme (Hungarian, maliyet matrisi) | `feat: add component matching engine` |
+| 18 | Fark analizi: izlenebilir `extra_component` kimliği | `fix: make extra-component findings traceable` |
+| 19 | Rotasyon/konum analizi — kapsam dışı (model açı üretmiyor) | — |
+| 20 | Tiling ve `imgsz`/IoU ayarları, sınıf eşikleri korundu | `feat: add tiled defect inference` |
+| 21/22 | Gerçek test split'i ile uygulama içi değerlendirme ve sınıf bazlı metrikler | `feat: add in-app model evaluation` |
+| 23 | Regresyon: karar eşikleri ve model hata sınıfı | `fix: harden decision thresholds and model errors` |
+| — | Dashboard KPI/dönem/sistem durumu düzeltmeleri (D1/D9/D10/D11/D13) | `feat: add period-aware dashboard metrics and system status` |
 
 ## Aşama 1 tanımı (MVP) — tamamlandı
 
@@ -34,7 +41,7 @@ Her tamamlanan adım commit edilip remote'a push edilir.
 
 - Industrial Dark tema, sidebar ve hash tabanlı 7 sayfa (geçmiş, referans, raporlar, model performansı, ayarlar).
 - Görüntüleyici: zoom/pan/fit, orijinal/işaretli geçişi, sınıf filtresi, kutu detayı.
-- Model ekranı yalnızca model kartındaki doğrulanmış metrikleri gösterir; uydurma precision/recall yok.
+- Model ekranı model kartı metriklerini gösterir; uydurma precision/recall yok. Gerçek ölçüm yapıldıysa ayrı bir panelde sınıf bazlı sonuçlar ve kaynak bilgisiyle birlikte gösterilir.
 
 ## Aşama 3 tanımı (izlenebilirlik) — tamamlandı
 
@@ -42,4 +49,12 @@ Her tamamlanan adım commit edilip remote'a push edilir.
 - Tek satırlık JSON log; istek ve analiz olayları aynı `request_id` ile korele edilir.
 - `LOG_LEVEL` ortam değişkeniyle log seviyesi ayarlanabilir.
 
-Kamera, canlı görüntü, donanım kalibrasyonu, lokal model eğitimi ve containerization bu sürümde yoktur.
+## Aşama 4 tanımı (AOI Engine 2.0) — tamamlandı
+
+- Referans hizalaması güven skoruyla raporlanır; güvenilmez hizalama MANUAL_REVIEW üretir.
+- Komponent eşleştirmesi global minimum maliyetle yapılır; fazla komponentler izlenebilir kimlik taşır.
+- Tiling varsayılan kapalıdır; açıldığında aynı sınıf eşikleri ve NMS uygulanır.
+- Gerçek test split'inde ölçülen metrikler `data/evaluation/*.json` içinde tutulur; `/models` ölçüm yoksa `measured_in_app=false` döner. Model kartı metrikleriyle karıştırılmaz.
+- Karar eşikleri ve model hata sınıfları izlenebilir; eksik model 503 döndürür.
+
+Kamera, canlı görüntü, donanım kalibrasyonu, lokal model eğitimi, rotasyon/konum analizi ve containerization bu sürümde yoktur.
