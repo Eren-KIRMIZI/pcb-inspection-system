@@ -7,6 +7,7 @@ from ..schemas import InspectionResult
 from .annotation import draw_detections
 from .decision import decide
 from .detector import get_detector
+from .report import generate_reports
 
 
 def _relative(path: Path) -> str:
@@ -24,7 +25,7 @@ def inspect_image(image_id: UUID, stored_path: str) -> InspectionResult:
     for detection in detections:
         counts[detection.class_name] = counts.get(detection.class_name, 0) + 1
 
-    return InspectionResult(
+    result = InspectionResult(
         image_id=image_id,
         verdict=decide(detections),
         defects=detections,
@@ -32,3 +33,5 @@ def inspect_image(image_id: UUID, stored_path: str) -> InspectionResult:
         annotated_image_path=_relative(annotated_path),
         created_at=datetime.now(timezone.utc),
     )
+    result.report_json_path, result.report_pdf_path = generate_reports(result)
+    return result

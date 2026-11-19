@@ -33,4 +33,6 @@ class InspectionResult(BaseModel):
     defects: list[Detection]
     counts: dict[str, int]
     annotated_image_path: str | None = None
+    report_json_path: str | None = None
+    report_pdf_path: str | None = None
     created_at: datetime

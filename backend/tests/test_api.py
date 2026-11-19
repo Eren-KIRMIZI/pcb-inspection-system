@@ -31,6 +31,8 @@ def test_inspection_flow_with_mock_detector() -> None:
     assert body["verdict"] == "PASS"
     assert body["defects"] == []
     assert body["annotated_image_path"]
+    assert body["report_json_path"]
+    assert body["report_pdf_path"]
 
     media_path = "/" + body["annotated_image_path"].replace("data/", "media/")
     assert client.get(media_path).status_code == 200
