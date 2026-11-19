@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# Veri ve modeller (boyut nedeniyle repo dışında)
+data/*
+!data/samples/
+!data/samples/**
+datasets/
+models/
+*.pt
+*.onnx
+*.engine
+*.zip
+
+# Çıktılar
+logs/
+*.log
+reports/generated/
+
+# OS / editör
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
