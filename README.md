@@ -13,7 +13,7 @@ Fotoğraf tabanlı, yapay zekâ destekli PCB kalite kontrol sistemi.
 1. Eksik komponent tespiti
 2. Yanlış yerleşim / kaymış komponent tespiti
 3. Lehim kusurları: köprü, yetersiz/fazla lehim, void
-4. Referans kart / BOM karşılaştırması (Aşama 2)
+4. Referans kart / BOM karşılaştırması — [`docs/REFERENCE.md`](docs/REFERENCE.md)
 
 Çıktılar: işaretlenmiş görüntü, kusur listesi, `PASS / FAIL / MANUAL REVIEW` kararı, JSON/PDF rapor.
 
@@ -30,7 +30,7 @@ Fotoğraf tabanlı, yapay zekâ destekli PCB kalite kontrol sistemi.
 ## Aşamalar
 
 - **Aşama 1 — MVP:** fotoğraf yükleme, YOLO çıkarımı, eksik/kaymış komponent ve lehim kusurları, sonuç ekranı, rapor.
-- **Aşama 2:** referans/BOM doğrulama, OpenCV hizalama, anomali tespiti, model metrikleri.
+- **Aşama 2:** anomali tespiti, model metrikleri, gelişmiş hizalama/tiling.
 - **Aşama 3 (opsiyonel):** üretim istatistikleri ve gelişmiş raporlama. Kamera bu sürümde yoktur.
 
 ## Veri setleri

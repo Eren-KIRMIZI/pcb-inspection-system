@@ -49,11 +49,21 @@ Model kartındaki F1-optimal değerler `thresholds.json` içinden okunur:
 
 Bilinen zayıflıklar: `solder_void` sıklıkla `insufficient_solder` ile karışır; `burn` recall’i düşüktür (~62%); koyu fotoğraflarda performans düşer.
 
-## Diğer hazır modeller (gelecek aşamalar)
+## Komponent tespiti (referans/BOM karşılaştırması için)
+
+| Model | Repo | Test mAP50 | Dosya |
+| --- | --- | --- | --- |
+| YOLO26s, 13 sınıf | [`ParsaVictor/pcb-component-detection-yolo26`](https://huggingface.co/ParsaVictor/pcb-component-detection-yolo26) | 0.432 | `fine_best.pt` (~20 MB) |
+
+`backend.training.download_model` betiği bu dosyayı da indirir. `.env` içinde `COMPONENT_MODEL_PATH` ile gösterilir. Kullanım detayları: [`REFERENCE.md`](REFERENCE.md).
+
+Bilinen sınır: küçük parçalarda ve benzer türlerde doğruluk düşüktür; model 1024px kırpıntılarla eğitilmiştir.
+
+## Diğer hazır modeller (kapalı)
 
 | Model | Repo | Kullanım |
 | --- | --- | --- |
 | Bare-board YOLO26s | [`pcb-bare-board-defect-detection-yolo26`](https://huggingface.co/ParsaVictor/pcb-bare-board-defect-detection-yolo26) | Çıplak kart iz/kopper kusurları (şu an kapalı) |
-| Component locator YOLO26s | [`pcb-component-detection-yolo26`](https://huggingface.co/ParsaVictor/pcb-component-detection-yolo26) | `any_best.pt` / `fine_best.pt`: komponent konumu ve türü |
+| Component locator YOLO26s | [`pcb-component-detection-yolo26`](https://huggingface.co/ParsaVictor/pcb-component-detection-yolo26) | `any_best.pt`: tek sınıflı konum bulucu (şu an kullanılmıyor) |
 
 Lisans: research/development. Ticari kullanım için model sahibiyle iletişime geçin.

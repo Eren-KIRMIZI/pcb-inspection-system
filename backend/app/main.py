@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import inspections, uploads
+from .routers import inspections, references, uploads
 from .schemas import HealthResponse
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
@@ -21,6 +21,7 @@ app.mount("/media", StaticFiles(directory=settings.data_dir), name="media")
 
 app.include_router(uploads.router, prefix=settings.api_prefix)
 app.include_router(inspections.router, prefix=settings.api_prefix)
+app.include_router(references.router, prefix=settings.api_prefix)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])

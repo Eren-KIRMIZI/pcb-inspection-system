@@ -27,6 +27,36 @@ class Detection(BaseModel):
     bbox: list[float] = Field(..., min_length=4, max_length=4)
 
 
+class ReferenceComponent(BaseModel):
+    ref: str
+    type: str
+    x: float = Field(..., ge=0, le=1)
+    y: float = Field(..., ge=0, le=1)
+
+
+class ReferenceBoard(BaseModel):
+    name: str
+    image_path: str
+    components: list[ReferenceComponent]
+
+
+class ReferenceIssue(BaseModel):
+    ref: str
+    expected_type: str
+    issue: Literal["missing_component", "wrong_component", "shifted_component"]
+    distance_px: float | None = None
+    detected_type: str | None = None
+    confidence: float | None = None
+
+
+class ReferenceCheck(BaseModel):
+    reference: str
+    aligned: bool
+    expected_count: int
+    detected_count: int
+    issues: list[ReferenceIssue]
+
+
 class InspectionResult(BaseModel):
     image_id: UUID
     verdict: Literal["PASS", "FAIL", "MANUAL_REVIEW"]
@@ -35,4 +65,5 @@ class InspectionResult(BaseModel):
     annotated_image_path: str | None = None
     report_json_path: str | None = None
     report_pdf_path: str | None = None
+    reference_check: ReferenceCheck | None = None
     created_at: datetime

@@ -88,6 +88,19 @@ button:disabled {
   color: #fcd34d;
 }
 
+.badge-reference {
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
+.upload-form input[type='text'] {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: inherit;
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

@@ -13,6 +13,7 @@ import type { InspectionResult } from './types'
 
 function App() {
   const [file, setFile] = useState<File | null>(null)
+  const [referenceName, setReferenceName] = useState('')
   const [result, setResult] = useState<InspectionResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -29,7 +30,7 @@ function App() {
     setLoading(true)
     setError(null)
     try {
-      setResult(await inspectImage(file))
+      setResult(await inspectImage(file, referenceName.trim() || undefined))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Beklenmeyen hata')
       setResult(null)
@@ -53,6 +54,12 @@ function App() {
         <h2>Yeni Kontrol</h2>
         <form onSubmit={handleSubmit} className="upload-form">
           <input type="file" accept="image/*" onChange={handleFileChange} />
+          <input
+            type="text"
+            placeholder="Referans adı (opsiyonel)"
+            value={referenceName}
+            onChange={(event) => setReferenceName(event.target.value)}
+          />
           <button type="submit" disabled={!file || loading}>
             {loading ? 'Analiz ediliyor…' : 'Analiz Et'}
           </button>
@@ -125,6 +132,47 @@ function App() {
             </table>
           ) : (
             <p className="muted">Kusur bulunamadı.</p>
+          )}
+        </section>
+      )}
+
+      {result?.reference_check && (
+        <section className="panel">
+          <div className="result-header">
+            <h2>Referans Kontrolü</h2>
+            <span className="badge badge-reference">{result.reference_check.reference}</span>
+          </div>
+          <p className="muted">
+            Hizalama: {result.reference_check.aligned ? 'başarılı' : 'yok'} · Beklenen:{' '}
+            {result.reference_check.expected_count} · Tespit edilen:{' '}
+            {result.reference_check.detected_count}
+          </p>
+
+          {result.reference_check.issues.length > 0 ? (
+            <table className="defect-table">
+              <thead>
+                <tr>
+                  <th>Ref</th>
+                  <th>Beklenen</th>
+                  <th>Sorun</th>
+                  <th>Tespit edilen</th>
+                  <th>Mesafe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.reference_check.issues.map((issue, index) => (
+                  <tr key={`${issue.ref}-${index}`}>
+                    <td>{issue.ref}</td>
+                    <td>{issue.expected_type}</td>
+                    <td>{issue.issue}</td>
+                    <td>{issue.detected_type ?? '—'}</td>
+                    <td>{issue.distance_px != null ? `${issue.distance_px} px` : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>Referansla uyumlu, uyuşmazlık bulunamadı.</p>
           )}
         </section>
       )}

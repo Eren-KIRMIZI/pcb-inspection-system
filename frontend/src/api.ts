@@ -1,8 +1,9 @@
 import type { InspectionResult } from './types'
 
-export async function inspectImage(file: File): Promise<InspectionResult> {
+export async function inspectImage(file: File, referenceName?: string): Promise<InspectionResult> {
   const formData = new FormData()
   formData.append('file', file)
+  if (referenceName) formData.append('reference_name', referenceName)
 
   const response = await fetch('/api/v1/inspections', {
     method: 'POST',

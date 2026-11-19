@@ -16,11 +16,16 @@ class Settings(BaseSettings):
     max_upload_mb: int = 20
     model_path: Path | None = None
     thresholds_path: Path | None = None
+    component_model_path: Path | None = None
+    component_conf_threshold: float = 0.20
+    component_imgsz: int = 1024
     device: str = "cpu"
     conf_threshold: float = 0.25
     use_mock_detector: bool = True
     manual_review_min_confidence: float = 0.40
     fail_min_confidence: float = 0.65
+    reference_match_distance_ratio: float = 0.02
+    reference_shift_distance_ratio: float = 0.015
 
     model_config = SettingsConfigDict(
         env_file=".env",
