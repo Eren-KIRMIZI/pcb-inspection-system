@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     model_path: Path | None = None
     device: str = "cpu"
     conf_threshold: float = 0.25
+    use_mock_detector: bool = True
 
     model_config = SettingsConfigDict(
         env_file=".env",
