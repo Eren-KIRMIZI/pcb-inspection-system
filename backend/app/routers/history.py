@@ -12,8 +12,15 @@ router = APIRouter(prefix="/history", tags=["history"])
 
 
 @router.get("/overview", response_model=OverviewStats)
-def get_overview(days: int = Query(7, ge=1, le=90)) -> OverviewStats:
-    return overview(days=days)
+def get_overview(
+    days: int = Query(7, ge=1, le=365),
+    date_from: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    date_to: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+) -> OverviewStats:
+    try:
+        return overview(days=days, date_from=date_from, date_to=date_to)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
 @router.get("", response_model=list[HistoryEntry])

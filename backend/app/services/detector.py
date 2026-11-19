@@ -104,6 +104,12 @@ _detector: Detector | None = None
 _detector_lock = threading.Lock()
 
 
+def is_detector_loaded() -> bool:
+    """Modelin bu süreçte yüklenip yüklenmediğini belirtir; yükleme tetiklemez."""
+
+    return _detector is not None
+
+
 def get_detector() -> Detector:
     global _detector
     if _detector is None:

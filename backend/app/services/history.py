@@ -1,6 +1,6 @@
 import json
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock
 from uuid import UUID
@@ -10,7 +10,9 @@ from ..schemas import (
     DefectCount,
     HistoryEntry,
     InspectionResult,
+    OverviewPeriod,
     OverviewStats,
+    PeriodComparison,
     TrendPoint,
 )
 
@@ -190,23 +192,87 @@ def get_result(image_id: str) -> dict | None:
     return json.loads(row["result_json"]) if row else None
 
 
-def overview(days: int = 7, recent_limit: int = 8) -> OverviewStats:
+def _parse_day(value: str | None, field: str) -> date | None:
+    if value is None:
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError(f"Geçersiz {field}: {value} (beklenen YYYY-MM-DD)") from exc
+
+
+def _period_bounds(days: int, date_from: str | None, date_to: str | None) -> tuple[date, date]:
+    start = _parse_day(date_from, "date_from")
+    end = _parse_day(date_to, "date_to")
     today = datetime.now(timezone.utc).date()
-    first_day = today - timedelta(days=days - 1)
+    if start is None and end is None:
+        end = today
+        start = end - timedelta(days=days - 1)
+    elif start is None:
+        assert end is not None
+        start = end - timedelta(days=days - 1)
+    elif end is None:
+        end = today
+    assert start is not None and end is not None
+    if start > end:
+        raise ValueError("date_from, date_to değerinden sonra olamaz")
+    return start, end
+
+
+def _day_range(start: date, end: date) -> tuple[str, str]:
+    return start.isoformat(), end.isoformat()
+
+
+def _totals(connection: sqlite3.Connection, start: date, end: date) -> dict:
+    row = connection.execute(
+        """
+        SELECT COUNT(*) AS total,
+               SUM(CASE WHEN verdict = 'PASS' THEN 1 ELSE 0 END) AS pass_count,
+               SUM(CASE WHEN verdict = 'FAIL' THEN 1 ELSE 0 END) AS fail_count,
+               SUM(CASE WHEN verdict = 'MANUAL_REVIEW' THEN 1 ELSE 0 END) AS review_count,
+               SUM(defect_count) AS defect_count,
+               SUM(CASE WHEN reference_name IS NOT NULL THEN 1 ELSE 0 END) AS reference_checks
+        FROM inspections
+        WHERE substr(created_at, 1, 10) BETWEEN ? AND ?
+        """,
+        _day_range(start, end),
+    ).fetchone()
+    return dict(row)
+
+
+def _change(current: int, previous: int) -> tuple[int, float | None]:
+    delta = current - previous
+    return delta, round(delta / previous * 100, 1) if previous else None
+
+
+def check_database() -> bool:
+    """Geçmiş veritabanına erişilebilirliği doğrular (model yüklemez)."""
+    try:
+        with _connect() as connection:
+            connection.execute("SELECT 1").fetchone()
+        return True
+    except sqlite3.Error:
+        return False
+
+
+def overview(
+    days: int = 7,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    recent_limit: int = 8,
+) -> OverviewStats:
+    """Seçili dönemin gerçek istatistiklerini ve önceki dönem farkını döner."""
+
+    start, end = _period_bounds(days, date_from, date_to)
+    length = (end - start).days + 1
+    prev_end = start - timedelta(days=1)
+    prev_start = prev_end - timedelta(days=length - 1)
 
     with _connect() as connection:
-        totals = dict(
-            connection.execute(
-                """
-                SELECT
-                    COUNT(*) AS total,
-                    SUM(CASE WHEN verdict = 'PASS' THEN 1 ELSE 0 END) AS pass_count,
-                    SUM(CASE WHEN verdict = 'FAIL' THEN 1 ELSE 0 END) AS fail_count,
-                    SUM(CASE WHEN verdict = 'MANUAL_REVIEW' THEN 1 ELSE 0 END) AS review_count,
-                    SUM(CASE WHEN reference_name IS NOT NULL THEN 1 ELSE 0 END) AS reference_checks
-                FROM inspections
-                """
-            ).fetchone()
+        totals = _totals(connection, start, end)
+        previous_totals = _totals(connection, prev_start, prev_end)
+        all_time = int(
+            connection.execute("SELECT COUNT(*) FROM inspections").fetchone()[0]
         )
         rows = connection.execute(
             """
@@ -216,27 +282,31 @@ def overview(days: int = 7, recent_limit: int = 8) -> OverviewStats:
                    SUM(CASE WHEN verdict = 'FAIL' THEN 1 ELSE 0 END) AS fail_count,
                    SUM(CASE WHEN verdict = 'MANUAL_REVIEW' THEN 1 ELSE 0 END) AS review_count
             FROM inspections
-            WHERE substr(created_at, 1, 10) >= ?
+            WHERE substr(created_at, 1, 10) BETWEEN ? AND ?
             GROUP BY day ORDER BY day
             """,
-            (first_day.isoformat(),),
+            _day_range(start, end),
         ).fetchall()
         defects = connection.execute(
             """
-            SELECT class_name, COUNT(*) AS count
-            FROM inspection_defects
-            GROUP BY class_name ORDER BY count DESC
-            """
+            SELECT d.class_name, COUNT(*) AS count
+            FROM inspection_defects d
+            JOIN inspections i ON i.image_id = d.image_id
+            WHERE substr(i.created_at, 1, 10) BETWEEN ? AND ?
+            GROUP BY d.class_name ORDER BY count DESC
+            """,
+            _day_range(start, end),
         ).fetchall()
         recent_rows = connection.execute(
-            "SELECT * FROM inspections ORDER BY created_at DESC LIMIT ?",
-            (recent_limit,),
+            "SELECT * FROM inspections WHERE substr(created_at, 1, 10) BETWEEN ? AND ? "
+            "ORDER BY created_at DESC LIMIT ?",
+            (*_day_range(start, end), recent_limit),
         ).fetchall()
 
     trend_by_day = {row["day"]: row for row in rows}
     trend: list[TrendPoint] = []
-    for index in range(days):
-        day = (first_day + timedelta(days=index)).isoformat()
+    for index in range(length):
+        day = (start + timedelta(days=index)).isoformat()
         row = trend_by_day.get(day)
         trend.append(
             TrendPoint(
@@ -249,19 +319,36 @@ def overview(days: int = 7, recent_limit: int = 8) -> OverviewStats:
         )
 
     total = totals.get("total") or 0
+    defect_count = totals.get("defect_count") or 0
+    previous_total = previous_totals.get("total") or 0
+    previous_defects = previous_totals.get("defect_count") or 0
+    total_delta, total_pct = _change(total, previous_total)
+    defect_delta, defect_pct = _change(defect_count, previous_defects)
+
     return OverviewStats(
         total_inspections=total,
+        all_time_count=all_time,
         pass_count=totals.get("pass_count") or 0,
         fail_count=totals.get("fail_count") or 0,
         manual_review_count=totals.get("review_count") or 0,
         pass_rate=round(((totals.get("pass_count") or 0) / total) * 100, 1)
         if total
         else 0.0,
+        defect_count=defect_count,
+        reference_checks=totals.get("reference_checks") or 0,
+        period=OverviewPeriod(start=start.isoformat(), end=end.isoformat(), days=length),
+        previous=PeriodComparison(
+            total_inspections=previous_total,
+            total_delta=total_delta,
+            total_change_pct=total_pct,
+            defect_count=previous_defects,
+            defect_delta=defect_delta,
+            defect_change_pct=defect_pct,
+        ),
         trend=trend,
         defect_distribution=[
             DefectCount(class_name=row["class_name"], count=row["count"])
             for row in defects
         ],
         recent=[_entry(row) for row in recent_rows],
-        reference_checks=totals.get("reference_checks") or 0,
     )

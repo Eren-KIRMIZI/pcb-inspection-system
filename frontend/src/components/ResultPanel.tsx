@@ -1,4 +1,5 @@
 import { downloadUrl } from '../api'
+import { defectLabel, issueLabel } from '../labels'
 import type { InspectionResult } from '../types'
 import {
   Card,
@@ -47,7 +48,10 @@ function DefectTable({ result }: { result: InspectionResult }) {
         <tbody>
           {result.defects.map((defect, index) => (
             <tr key={`${defect.class_name}-${index}`}>
-              <td><span className="class-tag">{defect.class_name}</span></td>
+              <td>
+                <span className="class-tag">{defectLabel(defect.class_name)}</span>
+                <small className="mono raw-class">{defect.class_name}</small>
+              </td>
               <td>
                 <div className="confidence">
                   <span>%{ (defect.confidence * 100).toFixed(1) }</span>
@@ -110,7 +114,7 @@ function ReferenceSection({ result }: { result: InspectionResult }) {
                 <tr key={`${issue.ref}-${index}`}>
                   <td className="mono">{issue.ref}</td>
                   <td>{issue.expected_type}</td>
-                  <td><span className="issue-tag">{issue.issue.replace('_', ' ')}</span></td>
+                  <td><span className="issue-tag">{issueLabel(issue.issue)}</span></td>
                   <td>{issue.detected_type ?? '—'}</td>
                   <td className="mono">{issue.distance_px != null ? `${issue.distance_px} px` : '—'}</td>
                 </tr>

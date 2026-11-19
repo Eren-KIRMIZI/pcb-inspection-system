@@ -53,6 +53,12 @@ _detector: ComponentDetector | None = None
 _detector_lock = threading.Lock()
 
 
+def is_component_detector_loaded() -> bool:
+    """Komponent modelinin yüklenip yüklenmediğini belirtir; yükleme tetiklemez."""
+
+    return _detector is not None
+
+
 def get_component_detector() -> ComponentDetector | None:
     global _detector
     if settings.component_model_path is None:

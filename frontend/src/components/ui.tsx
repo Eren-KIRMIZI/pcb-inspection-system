@@ -134,7 +134,7 @@ export function StatCard({
 }: {
   label: string
   value: string | number
-  hint?: string
+  hint?: ReactNode
   tone?: 'default' | 'pass' | 'fail' | 'review' | 'info'
 }) {
   return (

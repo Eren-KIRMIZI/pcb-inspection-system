@@ -150,13 +150,32 @@ class DefectCount(BaseModel):
     count: int
 
 
+class OverviewPeriod(BaseModel):
+    start: str
+    end: str
+    days: int
+
+
+class PeriodComparison(BaseModel):
+    total_inspections: int
+    total_delta: int
+    total_change_pct: float | None = None
+    defect_count: int
+    defect_delta: int
+    defect_change_pct: float | None = None
+
+
 class OverviewStats(BaseModel):
     total_inspections: int
+    all_time_count: int
     pass_count: int
     fail_count: int
     manual_review_count: int
     pass_rate: float
+    defect_count: int
     reference_checks: int
+    period: OverviewPeriod
+    previous: PeriodComparison | None = None
     trend: list[TrendPoint]
     defect_distribution: list[DefectCount]
     recent: list[HistoryEntry]
@@ -203,3 +222,18 @@ class SettingsResponse(BaseModel):
     min_image_width: int
     min_image_height: int
     max_upload_mb: int
+
+
+class ResourceStatus(BaseModel):
+    key: str
+    label: str
+    status: Literal["ok", "warning", "error"]
+    detail: str
+
+
+class SystemStatus(BaseModel):
+    api: ResourceStatus
+    defect_model: ResourceStatus
+    component_model: ResourceStatus
+    storage: ResourceStatus
+    database: ResourceStatus

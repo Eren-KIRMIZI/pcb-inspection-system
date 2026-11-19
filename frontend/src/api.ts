@@ -6,6 +6,7 @@ import type {
   ReferenceBoard,
   ReferenceSummary,
   SettingsResponse,
+  SystemStatus,
 } from './types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -36,8 +37,19 @@ export async function createReference(
   return request<ReferenceBoard>('/references', { method: 'POST', body: formData })
 }
 
-export function getOverview(days = 7): Promise<OverviewStats> {
-  return request<OverviewStats>(`/history/overview?days=${days}`)
+export interface OverviewQuery {
+  days?: number
+  date_from?: string
+  date_to?: string
+}
+
+export function getOverview(query: OverviewQuery = { days: 7 }): Promise<OverviewStats> {
+  const params = new URLSearchParams()
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') params.set(key, String(value))
+  })
+  const suffix = params.toString()
+  return request<OverviewStats>(`/history/overview${suffix ? `?${suffix}` : ''}`)
 }
 
 export interface HistoryQuery {
@@ -75,6 +87,10 @@ export function getModels(): Promise<ModelPerformance> {
 
 export function getSettings(): Promise<SettingsResponse> {
   return request<SettingsResponse>('/settings')
+}
+
+export function getSystemStatus(): Promise<SystemStatus> {
+  return request<SystemStatus>('/status')
 }
 
 export function mediaUrl(path: string | null): string | null {

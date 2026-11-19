@@ -105,13 +105,32 @@ export interface DefectCount {
   count: number
 }
 
+export interface OverviewPeriod {
+  start: string
+  end: string
+  days: number
+}
+
+export interface PeriodComparison {
+  total_inspections: number
+  total_delta: number
+  total_change_pct: number | null
+  defect_count: number
+  defect_delta: number
+  defect_change_pct: number | null
+}
+
 export interface OverviewStats {
   total_inspections: number
+  all_time_count: number
   pass_count: number
   fail_count: number
   manual_review_count: number
   pass_rate: number
+  defect_count: number
   reference_checks: number
+  period: OverviewPeriod
+  previous: PeriodComparison | null
   trend: TrendPoint[]
   defect_distribution: DefectCount[]
   recent: HistoryEntry[]
@@ -171,4 +190,19 @@ export interface SettingsResponse {
   min_image_width: number
   min_image_height: number
   max_upload_mb: number
+}
+
+export interface ResourceStatus {
+  key: string
+  label: string
+  status: 'ok' | 'warning' | 'error'
+  detail: string
+}
+
+export interface SystemStatus {
+  api: ResourceStatus
+  defect_model: ResourceStatus
+  component_model: ResourceStatus
+  storage: ResourceStatus
+  database: ResourceStatus
 }

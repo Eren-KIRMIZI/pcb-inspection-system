@@ -66,3 +66,16 @@ Her adım ayrı commit + push; testler her adımda çalıştırılır. Demo/sent
 - **Rotasyon:** kapsam dışı bırakılmalı mı, yoksa referans şablonu + güven skoruyla mı ölçülmeli? (bbox'tan açı uydurmak seçenek değil)
 - **Dashboard:** D1/D10/D9 düzeltmeleri motor çalışmasından önce mi, sonra mı?
 - **Yerel DB:** 2 gerçek kayıt korunacak mı, yoksa temiz bir başlangıç için silinecek mi? (silme işlemi kullanıcı onayı gerektirir)
+
+## 6. Kararlar ve çözülen maddeler (2026-11-19)
+
+Kullanıcı kararları: rotasyon analizi **kapsam dışı** (`rotation_error`, `open_joint` ve bilinmeyen anomali desteklenmez); dashboard düzeltmeleri **motor çalışmasından önce** yapılır; `data/inspections.db` içindeki 2 gerçek kayıt **korunur**, demo/sentetik veri eklenmez.
+
+Bu pakette çözülenler:
+
+- **D1 + D11:** `overview()` tüm KPI'ları, kusur dağılımını ve son analizleri seçili döneme göre filtreliyor; önceki eşit uzunluktaki dönem ayrı sorguyla hesaplanıyor. `date_from` / `date_to` desteği ve geçersiz aralıkta 400 (ortak hata şeması + `X-Request-ID`) eklendi.
+- **D9:** Frontend'de Türkçe sınıf etiketi haritası (`frontend/src/labels.ts`); backend sınıf adları ve decision kodları değişmedi, ham ad görünürlüğü korundu.
+- **D10:** `GET /api/v1/status` API, kusur modeli, komponent modeli, depolama ve veritabanı durumlarını model yüklemeden raporluyor; dashboard gerçek kaynakları gösteriyor.
+- **D13:** Dashboard'da 7/30/90/özel dönem seçici, önceki dönem delta göstergeleri ve dönem boşsa ayrı bilgilendirme eklendi.
+
+Kalanlar sırayla motor paketinde ele alınacak: D2 (16), D3 (17-18), D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.

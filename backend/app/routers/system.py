@@ -1,9 +1,19 @@
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+
 from fastapi import APIRouter
 
-from ..config import settings
-from ..schemas import ModelCard, ModelPerformance, SettingsResponse
-from ..services.components import get_component_detector
-from ..services.detector import get_detector
+from ..config import BASE_DIR, settings
+from ..schemas import (
+    ModelCard,
+    ModelPerformance,
+    ResourceStatus,
+    SettingsResponse,
+    SystemStatus,
+)
+from ..services.components import get_component_detector, is_component_detector_loaded
+from ..services.detector import get_detector, is_detector_loaded
+from ..services.history import check_database
 
 router = APIRouter(tags=["system"])
 
@@ -81,6 +91,84 @@ def get_models() -> ModelPerformance:
             "rotation_error, open_joint ve bilinmeyen anomali tespiti desteklenmez.",
             "RGB fotoğraf ile lehim altı void'leri güvenilir şekilde görülemez.",
         ],
+    )
+
+
+def _resolve(path: Path) -> Path:
+    return path if path.is_absolute() else BASE_DIR / path
+
+
+def _model_status(
+    key: str,
+    label: str,
+    path: Path | None,
+    loaded: bool,
+    disabled_detail: str,
+) -> ResourceStatus:
+    if path is None:
+        return ResourceStatus(key=key, label=label, status="warning", detail=disabled_detail)
+    if not _resolve(path).exists():
+        return ResourceStatus(key=key, label=label, status="error", detail="Model dosyası bulunamadı")
+    if loaded:
+        return ResourceStatus(key=key, label=label, status="ok", detail="Yüklendi · analiz hazır")
+    return ResourceStatus(
+        key=key,
+        label=label,
+        status="ok",
+        detail="Dosya mevcut · ilk analizde yüklenecek",
+    )
+
+
+def _storage_status() -> ResourceStatus:
+    try:
+        for directory in (settings.upload_dir, settings.results_dir):
+            directory.mkdir(parents=True, exist_ok=True)
+            with NamedTemporaryFile(dir=directory, prefix=".status-", delete=True):
+                pass
+    except OSError:
+        return ResourceStatus(
+            key="storage", label="Depolama", status="error", detail="Yazma izni yok"
+        )
+    return ResourceStatus(
+        key="storage", label="Depolama", status="ok", detail="Yükleme ve rapor dizinleri yazılabilir"
+    )
+
+
+@router.get("/status", response_model=SystemStatus, tags=["system"])
+def get_status() -> SystemStatus:
+    """Model yüklemesi tetiklemeden gerçek sistem durumunu raporlar."""
+
+    if settings.use_mock_detector:
+        defect_model = ResourceStatus(
+            key="defect_model",
+            label="Kusur modeli",
+            status="warning",
+            detail="Mock motor aktif; gerçek model kullanılmıyor",
+        )
+    else:
+        defect_model = _model_status(
+            "defect_model", "Kusur modeli", settings.model_path, is_detector_loaded(),
+            "Model yolu yapılandırılmadı",
+        )
+    component_model = _model_status(
+        "component_model",
+        "Komponent modeli",
+        settings.component_model_path,
+        is_component_detector_loaded(),
+        "Referans karşılaştırması kapalı",
+    )
+    database_ok = check_database()
+    return SystemStatus(
+        api=ResourceStatus(key="api", label="API", status="ok", detail="Çevrimiçi"),
+        defect_model=defect_model,
+        component_model=component_model,
+        storage=_storage_status(),
+        database=ResourceStatus(
+            key="database",
+            label="Geçmiş veritabanı",
+            status="ok" if database_ok else "error",
+            detail="Erişilebilir" if database_ok else "Erişilemedi",
+        ),
     )
 
 

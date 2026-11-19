@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { mediaUrl } from '../api'
+import { defectLabel } from '../labels'
 import type { Detection, InspectionResult } from '../types'
 import { Icon } from './ui'
 
@@ -103,7 +104,7 @@ export function PcbViewer({ result }: { result: InspectionResult }) {
         >
           <option value="all">Tüm sınıflar ({result.defects.length})</option>
           {classes.map((name) => (
-            <option key={name} value={name}>{name}</option>
+            <option key={name} value={name}>{defectLabel(name)}</option>
           ))}
         </select>
 
@@ -167,11 +168,11 @@ export function PcbViewer({ result }: { result: InspectionResult }) {
                     key={`${defect.class_name}-${index}`}
                     className={`defect-box ${selected === index ? 'defect-box-selected' : ''}`}
                     style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
-                    title={`${defect.class_name} · %${(defect.confidence * 100).toFixed(1)}`}
+                    title={`${defectLabel(defect.class_name)} · %${(defect.confidence * 100).toFixed(1)}`}
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={() => setSelected(index)}
                   >
-                    <span>{defect.class_name}</span>
+                    <span>{defectLabel(defect.class_name)}</span>
                   </button>
                 )
               })}
@@ -185,8 +186,10 @@ export function PcbViewer({ result }: { result: InspectionResult }) {
         {selected !== null && selectedDefect ? (
           <div className="defect-detail">
             <div>
-              <strong>{selectedDefect.class_name}</strong>
-              <span className="muted">#{selected + 1} · sınıf kimliği {selectedDefect.class_id}</span>
+              <strong>{defectLabel(selectedDefect.class_name)}</strong>
+              <span className="muted">
+                #{selected + 1} · {selectedDefect.class_name} · sınıf kimliği {selectedDefect.class_id}
+              </span>
             </div>
             <div><span>Güven</span><strong>%{(selectedDefect.confidence * 100).toFixed(1)}</strong></div>
             <div className="mono">
