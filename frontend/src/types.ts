@@ -240,6 +240,8 @@ export interface SettingsResponse {
   defect_model: string
   component_model: string | null
   conf_threshold: number
+  fail_min_confidence: number
+  manual_review_min_confidence: number
   class_thresholds_applied: boolean
   detector_imgsz: number
   tiling_enabled: boolean

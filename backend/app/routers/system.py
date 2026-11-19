@@ -205,6 +205,8 @@ def get_settings() -> SettingsResponse:
         if settings.component_model_path
         else None,
         conf_threshold=settings.conf_threshold,
+        fail_min_confidence=settings.fail_min_confidence,
+        manual_review_min_confidence=settings.manual_review_min_confidence,
         class_thresholds_applied=getattr(detector, "thresholds_applied", False),
         detector_imgsz=settings.detector_imgsz,
         tiling_enabled=settings.tiling_enabled,

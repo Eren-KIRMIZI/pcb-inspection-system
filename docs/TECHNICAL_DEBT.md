@@ -111,3 +111,12 @@ Adım 19 uygulanmadı: rotasyon/konum analizi kapsam dışı kararı (D4) korund
 - `services/evaluation.py` COCO benzeri, güven sıralı bire-bir IoU eşleştirmesiyle precision, recall, F1, TP/FP/FN ve AP50/AP50-95 üretir; sınıf bazlı sonuçlar ve ortalama çıkarım süresi de kaydedilir. mAP yalnızca test split'inde ground truth bulunan sınıfların ortalamasıdır; `oxidation` sınıfı 0 kutuya sahip olduğu için `classes_without_ground_truth` içinde açıkça bildirilir.
 - Sonuç `data/evaluation/solder-defect-test.json` (gitignored) dosyasına yazılır. `/api/v1/models` yalnızca gerçek (`engine=real`) ve sağlam bir ölçüm dosyası varsa `measured_in_app=true` döner; aksi halde `false` kalır. Model kartı metrikleri değiştirilmez, iki kaynak ayrı gösterilir.
 - 10 yeni test eklendi (74 test toplam); CLI 5 görsellik smoke testinde gerçek modelle çalıştı.
+- Gerçek tam ölçüm sonucu (yerel, gitignored `data/evaluation/solder-defect-test.json`): 686 görsel / 663 kutu, precision 0.8720, recall 0.8733, F1 0.8726, mAP50 0.6908, mAP50-95 0.4616, 412.8 ms/görsel (CPU, imgsz 640, sınıf eşikleri uygulandı). Model kartındaki 0.895 mAP50 ile bu değerin farkı farklı eşik/yapılandırma ve yerel CPU çıkarımından kaynaklanır; iki kaynak API'de ayrı gösterilir. Test split'inde `oxidation` sınıfı için ground truth bulunmadığından mAP ortalamasına dahil edilmez.
+
+### Adım 23 — regresyon ve hata sertleştirmesi (`fix: harden decision thresholds and model errors`)
+
+- **D7:** `manual_review_min_confidence` artık karar motorunda kullanılıyor. `fail_min_confidence` üzeri tespitler FAIL, `[manual_review_min_confidence, fail_min_confidence)` aralığı `UNCERTAIN_DEFECT`, altı `LOW_CONFIDENCE_DEFECT` gerekçesiyle MANUAL_REVIEW oluyor. Düşük güvenli tespitler sessizce yok sayılmıyor; hiçbir durumda otomatik PASS üretilmiyor. Her iki eşik `/settings` ve Ayarlar ekranında görünür.
+- **D8:** `ComponentDetector` eksik `.pt` dosyasında artık `RuntimeError` yerine `ModelUnavailableError` fırlatıyor; API `503 model_unavailable` + ortak hata şeması döndürüyor. Kusur ve komponent modelleri aynı hata sınıfını kullanıyor.
+- 4 yeni test eklendi (78 test toplam); CLI/API/frontend regresyonları temiz.
+
+Tüm D1–D14 maddeleri ya çözüldü ya da kapsam dışı karara bağlandı (D4 rotasyon analizi; D12 görüntü kalitesi genişletmesi keyfi eşik riski nedeniyle uygulanmadı). D8 için ayrıca `/status` zaten model dosyası varlığını model yüklemeden raporluyor.

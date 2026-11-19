@@ -293,6 +293,8 @@ class SettingsResponse(BaseModel):
     defect_model: str
     component_model: str | None
     conf_threshold: float
+    fail_min_confidence: float
+    manual_review_min_confidence: float
     class_thresholds_applied: bool
     detector_imgsz: int
     tiling_enabled: bool

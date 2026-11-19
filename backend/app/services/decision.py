@@ -75,6 +75,19 @@ def _defect_reasons(defects: list[Detection]) -> list[DecisionReason]:
                     f"Yüksek güvenli kusur (eşik %{settings.fail_min_confidence * 100:.0f}) — {detail}",
                 )
             )
+        elif max_confidence < settings.manual_review_min_confidence:
+            # D7: Bu ayar artık karar motorunda kullanılıyor. Eşiğin altındaki
+            # tespitler yok sayılmaz; otomatik PASS verilmemesi için manuel
+            # incelemeye yönlendirilir ve gerekçesi açıkça kaydedilir.
+            reasons.append(
+                _reason(
+                    "LOW_CONFIDENCE_DEFECT",
+                    "medium",
+                    "defect",
+                    f"Düşük güvenli kusur (manuel inceleme eşiği %{settings.manual_review_min_confidence * 100:.0f}), "
+                    f"otomatik karar verilemez — {detail}",
+                )
+            )
         else:
             reasons.append(
                 _reason(

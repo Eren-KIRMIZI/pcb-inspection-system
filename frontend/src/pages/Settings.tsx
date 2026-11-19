@@ -36,6 +36,8 @@ export function Settings() {
               <div><dt>Komponent modeli</dt><dd className="mono">{settings.component_model ?? 'yok'}</dd></div>
               <div><dt>Sınıf eşikleri</dt><dd>{settings.class_thresholds_applied ? 'thresholds.json uygulandı' : 'uygulanmadı'}</dd></div>
               <div><dt>Genel güven eşiği</dt><dd>{settings.conf_threshold}</dd></div>
+              <div><dt>FAIL güven eşiği</dt><dd>{settings.fail_min_confidence}</dd></div>
+              <div><dt>Manuel inceleme eşiği</dt><dd>{settings.manual_review_min_confidence}</dd></div>
             </dl>
           </Card>
 

@@ -71,6 +71,18 @@ def test_medium_confidence_needs_review() -> None:
     assert any(reason.code == "UNCERTAIN_DEFECT" for reason in decision.reasons)
 
 
+def test_low_confidence_defect_is_reviewed_not_ignored() -> None:
+    # D7: manual_review_min_confidence artık kullanılıyor. Eşik altındaki
+    # tespit sessizce PASS'e dönüşmemeli; gerekçesi kaydedilmelidir.
+    decision = decide(_context([_detection("burn", 0.25)]))
+
+    assert decision.verdict == "MANUAL_REVIEW"
+    reason = next(
+        item for item in decision.reasons if item.code == "LOW_CONFIDENCE_DEFECT"
+    )
+    assert "manuel inceleme eşiği" in reason.message
+
+
 def test_mock_engine_never_returns_pass() -> None:
     decision = decide(_context(engine="mock"))
     assert decision.verdict == "MANUAL_REVIEW"

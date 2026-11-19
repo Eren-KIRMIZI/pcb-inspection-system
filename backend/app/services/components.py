@@ -2,6 +2,7 @@ import threading
 from pathlib import Path
 
 from ..config import BASE_DIR, settings
+from ..errors import ModelUnavailableError
 from ..schemas import Detection
 
 
@@ -14,7 +15,8 @@ class ComponentDetector:
 
     def __init__(self, model_path: Path, conf: float, imgsz: int, device: str) -> None:
         if not model_path.exists():
-            raise RuntimeError(f"Komponent model dosyası bulunamadı: {model_path}")
+            # D8: Kusur modeliyle aynı hata sınıfı; API 503 + model_unavailable döner.
+            raise ModelUnavailableError(f"Komponent model dosyası bulunamadı: {model_path}")
 
         from ultralytics import YOLO
 
