@@ -65,13 +65,13 @@ Testler:
 .\.venv\Scripts\python.exe -m pytest backend\tests -q
 ```
 
-Model ağırlığı hazır olduğunda kök dizinde bir `.env` dosyası oluşturulur:
+Hazır modeli indir (lokal eğitim gerekmez):
 
-```env
-MODEL_PATH=models/pcb-solder-defect-detection-yolo26/best.pt
-USE_MOCK_DETECTOR=false
-DEVICE=cpu
-CONF_THRESHOLD=0.25
+```powershell
+.\.venv\Scripts\python.exe -m backend.training.download_model
+Copy-Item .env.example .env
 ```
 
-Model ağırlığı yoksa sistem otomatik olarak mock detector ile çalışır; akış uçtan uca test edilebilir. Veri setleri ve model dosyaları `.gitignore` ile repo dışında tutulur.
+`.env` içeriği hazır modeli ve sınıf bazlı eşikleri gösterir. GPU varsa `DEVICE=0`, yoksa `DEVICE=cpu` kullanın. Ayrıntılar: [`docs/MODELS.md`](docs/MODELS.md)
+
+Model dosyası yoksa sistem otomatik olarak mock detector ile çalışır; akış uçtan uca test edilebilir. Veri setleri ve model dosyaları `.gitignore` ile repo dışında tutulur.

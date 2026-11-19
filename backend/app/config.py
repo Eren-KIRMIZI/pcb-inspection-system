@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     results_dir: Path = BASE_DIR / "data" / "results"
     max_upload_mb: int = 20
     model_path: Path | None = None
+    thresholds_path: Path | None = None
     device: str = "cpu"
     conf_threshold: float = 0.25
     use_mock_detector: bool = True

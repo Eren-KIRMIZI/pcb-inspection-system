@@ -1,4 +1,7 @@
-# Model Eğitimi
+# Model Eğitimi (opsiyonel)
+
+Proje varsayılan olarak hazır eğitilmiş modeli kullanır; lokal eğitim **gerekli değildir**. Bkz. [`MODELS.md`](MODELS.md).  
+Aşağıdaki adımlar yalnızca kendi modelini eğitmek istersen geçerlidir.
 
 ## 1. Veri setini indir
 
