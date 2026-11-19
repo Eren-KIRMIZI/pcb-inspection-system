@@ -3,6 +3,7 @@ from pathlib import Path
 from time import perf_counter
 
 from ..config import BASE_DIR, settings
+from ..logging_config import get_logger
 from ..schemas import (
     InspectionResult,
     ModelInfo,
@@ -16,6 +17,8 @@ from .detector import get_detector
 from .history import save_result
 from .reference import compare_board
 from .report import generate_reports
+
+logger = get_logger(__name__)
 
 
 def _relative(path: Path) -> str:
@@ -92,4 +95,27 @@ def inspect_image(
     )
     result.report_json_path, result.report_pdf_path = generate_reports(result)
     save_result(result)
+
+    logger.info(
+        "Analiz tamamlandı",
+        extra={
+            "event": "inspection_completed",
+            "image_id": str(result.image_id),
+            "upload_filename": result.filename,
+            "engine": result.engine,
+            "defect_model": result.model.defect_model,
+            "component_model": result.model.component_model,
+            "device": result.model.device,
+            "verdict": result.verdict,
+            "defect_count": len(result.defects),
+            "decision_codes": [reason.code for reason in result.decision.reasons],
+            "reference": result.reference_check.reference
+            if result.reference_check
+            else None,
+            "reference_issues": len(result.reference_check.issues)
+            if result.reference_check
+            else None,
+            "duration_ms": result.duration_ms,
+        },
+    )
     return result

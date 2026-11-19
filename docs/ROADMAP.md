@@ -15,13 +15,31 @@ Her tamamlanan adım commit edilip remote'a push edilir.
 | 9 | Referans/BOM karşılaştırma katmanı | `feat: add reference comparison` |
 | 10 | JSON + PDF rapor çıktısı | `feat: add inspection reports` |
 | 11 | Temel testler ve CI | `test: add pipeline tests` |
+| 12 | Sağlamlaştırma: EXIF, kilitli model yükleyici, hizalama kararı, genişletilmiş testler | `fix: harden inspection pipeline and decision traceability` |
+| 13 | Geçmiş/istatistik API'si, model/ayar/referans endpoint'leri, SQLite kayıt | `feat: add inspection history, overview stats and system endpoints` |
+| 14 | Endüstriyel koyu tema, hash router, 7 sayfa, zoom/pan görüntüleyici | `feat: add industrial AOI dashboard and inspection workspace` |
+| 15 | Ortak hata şeması, `X-Request-ID`, yapılandırılmış JSON log | `feat: add structured logging and standard API errors` |
+| 16 | (Sonraki) Eşleştirme iyileştirmeleri, tiling/SAHI, gerçek metrik değerlendirmesi | `feat: improve reference matching and evaluation` |
 
-## Aşama 1 tanımı (MVP)
+## Aşama 1 tanımı (MVP) — tamamlandı
 
 - Kullanıcı bir PCB fotoğrafı yükler.
 - Backend görüntüyü YOLO modeliyle analiz eder.
 - Kusurlar görüntü üzerinde işaretlenir ve tabloya dökülür.
-- Karar motoru PASS / FAIL / MANUAL REVIEW üretir.
-- Sonuç JSON olarak döner ve arayüzde gösterilir.
+- Karar motoru gerekçeli PASS / FAIL / MANUAL REVIEW üretir; referans/BOM sonucu karara girer.
+- Sonuç JSON olarak döner, arayüzde gösterilir ve SQLite geçmişine kaydedilir.
+- JSON/PDF rapor indirilebilir; ana sayfa gerçek KPI ve trend grafikleri gösterir.
 
-Kamera, canlı görüntü ve donanım kalibrasyonu bu sürümde yoktur.
+## Aşama 2 tanımı (arayüz) — tamamlandı
+
+- Industrial Dark tema, sidebar ve hash tabanlı 7 sayfa (geçmiş, referans, raporlar, model performansı, ayarlar).
+- Görüntüleyici: zoom/pan/fit, orijinal/işaretli geçişi, sınıf filtresi, kutu detayı.
+- Model ekranı yalnızca model kartındaki doğrulanmış metrikleri gösterir; uydurma precision/recall yok.
+
+## Aşama 3 tanımı (izlenebilirlik) — tamamlandı
+
+- Tüm hata yanıtları `{error, detail, request_id}` gövdesini ve `X-Request-ID` başlığını kullanır.
+- Tek satırlık JSON log; istek ve analiz olayları aynı `request_id` ile korele edilir.
+- `LOG_LEVEL` ortam değişkeniyle log seviyesi ayarlanabilir.
+
+Kamera, canlı görüntü, donanım kalibrasyonu, lokal model eğitimi ve containerization bu sürümde yoktur.

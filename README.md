@@ -10,28 +10,33 @@ Fotoğraf tabanlı, yapay zekâ destekli PCB kalite kontrol sistemi.
 
 ## Kapsam
 
-1. Eksik komponent tespiti
+1. Eksik komponent tespiti (referans/BOM karşılaştırmasıyla)
 2. Yanlış yerleşim / kaymış komponent tespiti
-3. Lehim kusurları: köprü, yetersiz/fazla lehim, void
+3. Lehim kusurları: köprü, yetersiz/fazla lehim (`solder_void` düşük güvenilirliktedir; RGB fotoğrafta lehim altı void güvenilir biçimde doğrulanamaz)
 4. Referans kart / BOM karşılaştırması — [`docs/REFERENCE.md`](docs/REFERENCE.md)
 
-Çıktılar: işaretlenmiş görüntü, kusur listesi, `PASS / FAIL / MANUAL REVIEW` kararı, JSON/PDF rapor.
+Desteklenmeyen: `rotation_error` (komponent modeli açı üretmez), `open_joint` (model sınıfı yok), bilinmeyen anomali (anomaly detection modeli yok). Ayrıntılar: [`docs/MODELS.md`](docs/MODELS.md).
 
-## Teknoloji yığını (plan)
+Çıktılar: işaretlenmiş görüntü, kusur listesi, gerekçeli `PASS / FAIL / MANUAL REVIEW` kararı, JSON/PDF rapor, SQLite geçmiş kaydı.
+
+## Teknoloji yığını
 
 | Katman | Teknoloji |
 | --- | --- |
-| AI / CV | Python, PyTorch, Ultralytics YOLO, OpenCV |
-| Backend | FastAPI |
-| Frontend | React + TypeScript, Recharts |
-| Veri | PostgreSQL (sonraki aşama), yerel dosya sistemi |
-| İleri AI | Anomalib / U-Net (Aşama 2) |
+| AI / CV | Python, PyTorch (CPU), Ultralytics YOLO26, OpenCV (SIFT + RANSAC hizalama) |
+| Backend | FastAPI, Pydantic, `sqlite3` (stdlib) |
+| Frontend | React + TypeScript, Vite, Recharts, hash tabanlı router |
+| Loglama | Tek satırlık JSON, `request_id` korelasyonu, `LOG_LEVEL` |
+| Veri | Yerel dosya sistemi + `data/inspections.db` (çok kullanıcılı aşamada PostgreSQL) |
+
+Yerel model eğitimi yoktur; yalnızca hazır `.pt` ağırlıkları kullanılır.
 
 ## Aşamalar
 
-- **Aşama 1 — MVP:** fotoğraf yükleme, YOLO çıkarımı, eksik/kaymış komponent ve lehim kusurları, sonuç ekranı, rapor.
-- **Aşama 2:** anomali tespiti, model metrikleri, gelişmiş hizalama/tiling.
-- **Aşama 3 (opsiyonel):** üretim istatistikleri ve gelişmiş raporlama. Kamera bu sürümde yoktur.
+- **Aşama 1 — güvenilirlik ve karar motoru:** gerçek YOLO çıkarımı, sınıf eşikleri, referans eşleştirme, gerekçeli karar, mock/gerçek ayrımı, görüntü doğrulama, kilitli model yükleyici, hata şeması, testler. ✅
+- **Aşama 2 — arayüz:** Industrial Dark tema, 7 sayfalık hash router, zoom/pan görüntüleyici, geçmiş/raporlar, gerçek metriklerle model ekranı. ✅
+- **Aşama 3 — operasyonel izlenebilirlik:** ortak API hata gövdesi, `X-Request-ID`, yapılandırılmış JSON log. ✅
+- **Sonraki:** one-to-one eşleştirme iyileştirmeleri, tiling/SAHI, gerçek metrik değerlendirmesi, çok kullanıcılı veri katmanı. Kamera/donanım bu sürümde yoktur.
 
 ## Veri setleri
 
@@ -59,11 +64,39 @@ npm.cmd run dev
 
 Arayüz: http://localhost:5173 · API docs: http://localhost:8000/docs
 
+Üretim derlemesi:
+
+```powershell
+cd frontend
+npm.cmd run build
+```
+
 Testler:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest backend\tests -q
 ```
+
+## API ve hata şeması
+
+Ana endpoint'ler: `POST /api/v1/uploads`, `POST /api/v1/inspections`, `GET /api/v1/history`,
+`GET /api/v1/history/overview`, `GET /api/v1/history/{id}`, `GET /api/v1/references`,
+`GET /api/v1/models`, `GET /api/v1/settings`.
+
+Tüm hata yanıtları aynı gövdeyi kullanır ve `X-Request-ID` başlığı taşır:
+
+```json
+{
+  "error": "bad_request",
+  "detail": "Dosya geçerli bir görüntü değil",
+  "request_id": "verify-i3-001"
+}
+```
+
+İstekte `X-Request-ID` gönderilirse aynı değer yansıtılır; aksi halde sunucu UUID üretir.
+Her istek ve analiz tek satırlık JSON olarak loglanır; `request_id` alanı logları istekle
+iliştirir. Log seviyesi `.env` içindeki `LOG_LEVEL` ile ayarlanır (varsayılan `INFO`).
+Önemli olaylar: `request_completed`, `api_error`, `validation_error`, `inspection_completed`.
 
 Hazır modeli indir (lokal eğitim gerekmez):
 
@@ -74,4 +107,4 @@ Copy-Item .env.example .env
 
 `.env` içeriği hazır modeli ve sınıf bazlı eşikleri gösterir. GPU varsa `DEVICE=0`, yoksa `DEVICE=cpu` kullanın. Ayrıntılar: [`docs/MODELS.md`](docs/MODELS.md)
 
-Model dosyası yoksa sistem otomatik olarak mock detector ile çalışır; akış uçtan uca test edilebilir. Veri setleri ve model dosyaları `.gitignore` ile repo dışında tutulur.
+Model dosyası yoksa sistem otomatik olarak mock detector ile çalışır; akış uçtan uca test edilebilir, ancak mock motor asla `PASS` kararı vermez ve sonuç `MANUAL_REVIEW` olarak işaretlenir. Veri setleri, model dosyaları, `data/` altındaki yüklemeler/raporlar/SQLite veritabanı `.gitignore` ile repo dışında tutulur; denetim geçmişi ve teknik bulgular [`docs/AUDIT.md`](docs/AUDIT.md) içindedir.

@@ -3,11 +3,28 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
+from .errors import register_error_handlers
+from .logging_config import configure_logging
+from .middleware import register_middleware
 from .routers import history, inspections, references, system, uploads
-from .schemas import HealthResponse
+from .schemas import ErrorResponse, HealthResponse
 from .services.history import init_db
 
-app = FastAPI(title=settings.app_name, version="0.1.0")
+configure_logging()
+
+app = FastAPI(
+    title=settings.app_name,
+    version="0.2.0",
+    responses={
+        400: {"description": "Ortak hata şeması", "model": ErrorResponse},
+        404: {"description": "Kaynak bulunamadı", "model": ErrorResponse},
+        422: {"description": "Doğrulama hatası", "model": ErrorResponse},
+        500: {"description": "Sunucu hatası", "model": ErrorResponse},
+    },
+)
+
+register_middleware(app)
+register_error_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,

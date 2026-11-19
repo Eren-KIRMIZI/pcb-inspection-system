@@ -55,7 +55,7 @@ Amaç: projeyi bir YOLO demosundan güvenilir bir AOI kalite kontrol yazılımı
 - SIFT + RANSAC hizalama gerçek görselde `aligned: true` verdi.
 - Dosya yükleme, benzersiz UUID adlandırma, boyut/format kontrolü temel düzeyde çalışıyor.
 - JSON/PDF rapor dosyaları diske yazılıyor.
-- 11 test geçiyor; build başarılı.
+- Denetim anında 11 test geçiyordu; mevcut durumda 37 test ve production build başarılı.
 
 ## Desteklenmeyen / gerçek olmayan yetenekler (açıkça işaretli)
 
@@ -86,10 +86,27 @@ Her aşama ayrı commit + push; mevcut testler her adımda çalıştırılacak.
 | C5 | ✅ Düzeltildi | `engine: real/mock` ve `MOCK_ENGINE` gerekçesi; mock asla PASS vermiyor. |
 | I1 | ✅ Düzeltildi | EXIF yönü uygulanıyor, min çözünürlük kontrolü eklendi; gereksiz yeniden kodlama kaldırıldı. |
 | I2 | ✅ Düzeltildi | Model yükleyicilerde çift kontrollü `threading.Lock`. |
-| I3 | ⏳ Kısmen | Model yolu eksikse anlaşılır `RuntimeError`; ortak hata şeması sonra. |
+| I3 | ✅ Düzeltildi | `{error, detail, request_id}` ortak gövdesi, `X-Request-ID`, HTTP/doğrulama/servis/beklenmeyen hata handler'ları. |
 | I5 | ✅ Düzeltildi | Hizalama başarısızlığı → MANUAL_REVIEW. |
-| I7 | ✅ Genişletildi | 23 test: karar, referans eşleştirme, yükleme doğrulama, hata durumları. |
-| I8 | ⏳ Bekliyor | Yapılandırılmış loglama sonraki aşamada. |
-| I9 | ⏳ Bekliyor | Profesyonel arayüz Aşama 2’de. |
+| I7 | ✅ Genişletildi | 37 test: karar, referans eşleştirme, yükleme doğrulama, hata şeması ve log korelasyonu. |
+| I8 | ✅ Düzeltildi | Tek satırlık JSON log, `LOG_LEVEL`, istek/analiz olaylarında `request_id` korelasyonu. |
+| I9 | ✅ Düzeltildi | Endüstriyel koyu tema, hash router, 7 sayfa, zoom/pan viewer, boş/yükleme/hata durumları, responsive. |
 
 Doğrulanan demo sonucu (gerçek modellerle): 73 beklenen, 120 ham komponent tespiti, 73 eşik üstü, 73 eşleşen, 0 uyuşmazlık; karar FAIL ve gerekçesi yalnızca yüksek güvenli `excess_solder`.
+
+## Düzeltme sonrası doğrulama (2026-11-19)
+
+| Kontrol | Sonuç |
+| --- | --- |
+| `pytest backend/tests -q` | 37 passed, 2 warnings (Starlette/httpx deprecation) |
+| `npm.cmd run build` | Başarılı (JS chunk >500 kB uyarısı, gzip ~193 kB) |
+| `/media` proxy (Vite + API) | `200`, `image/jpeg`, 147.864 byte |
+| Tarayıcıda 7 sayfa | Hatasız render, konsol hatası yok |
+| Uçtan uca gerçek analiz | `FAIL` + `GERÇEK MODEL`, 4 `excess_solder`, referans 73/73, 640×640 işaretli görüntü |
+| Geçmiş / raporlar / overview | 1 kayıt, JSON+PDF linkleri, gerçek KPI ve 2 grafik |
+| Bozuk dosya `POST /api/v1/uploads` | `400`, `{"error":"bad_request","detail":...,"request_id":...}`, `X-Request-ID` başlığı |
+| Eksik alan `POST /api/v1/uploads` | `422`, `error: validation_error` |
+| JSON log olayları | `request_completed`, `api_error`, `validation_error`, `inspection_completed`; aynı `request_id` ile korele |
+| `GET /api/v1/history/overview`, `/models`, `/settings` | `200`, her yanıtta `X-Request-ID` |
+
+Not: bu doğrulamada `data/inspections.db` yerel demo kaydıyla doludur; dosya `.gitignore` kapsamındadır, temiz klonda geçmiş boş başlar. Referans BOM'u `data/references/demo.json` yine gitignored olduğu için temiz klonda yeniden oluşturulmalıdır.

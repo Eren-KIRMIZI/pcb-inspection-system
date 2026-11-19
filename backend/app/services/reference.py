@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 
 from ..config import BASE_DIR, settings
+from ..errors import ImageReadError
 from ..schemas import Detection, ReferenceBoard, ReferenceCheck, ReferenceIssue
 from .alignment import align_images
 from .components import get_component_detector
@@ -92,7 +93,7 @@ def compare_board(
     reference_image = cv2.imread(str(reference_image_path))
     target_image = cv2.imread(str(target_path))
     if reference_image is None or target_image is None:
-        raise ValueError("Referans veya test görüntüsü okunamadı")
+        raise ImageReadError("Referans veya test görüntüsü okunamadı")
 
     ref_h, ref_w = reference_image.shape[:2]
     target_h, target_w = target_image.shape[:2]

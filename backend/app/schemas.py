@@ -14,6 +14,14 @@ class HealthResponse(BaseModel):
     app: str
 
 
+class ErrorResponse(BaseModel):
+    """Tüm hata cevaplarının ortak gövdesi."""
+
+    error: str
+    detail: str
+    request_id: str | None = None
+
+
 class UploadedImage(BaseModel):
     id: UUID
     filename: str

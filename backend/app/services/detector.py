@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Protocol
 
 from ..config import BASE_DIR, settings
+from ..errors import ModelUnavailableError
 from ..schemas import Detection, EngineMode
 
 
@@ -42,7 +43,7 @@ class YoloDetector:
         thresholds_path: Path | None = None,
     ) -> None:
         if not model_path.exists():
-            raise RuntimeError(f"Model dosyası bulunamadı: {model_path}")
+            raise ModelUnavailableError(f"Model dosyası bulunamadı: {model_path}")
 
         from ultralytics import YOLO
 
