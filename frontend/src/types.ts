@@ -73,3 +73,102 @@ export interface InspectionResult {
   reference_check: ReferenceCheck | null
   created_at: string
 }
+
+export interface HistoryEntry {
+  image_id: string
+  created_at: string
+  filename: string
+  verdict: Verdict
+  engine: EngineMode
+  defect_count: number
+  top_defect: string | null
+  reference_name: string | null
+  reference_issues: number
+  duration_ms: number
+  image_width: number
+  image_height: number
+  annotated_image_path: string | null
+  report_json_path: string | null
+  report_pdf_path: string | null
+}
+
+export interface TrendPoint {
+  date: string
+  total: number
+  pass_count: number
+  fail_count: number
+  manual_review_count: number
+}
+
+export interface DefectCount {
+  class_name: string
+  count: number
+}
+
+export interface OverviewStats {
+  total_inspections: number
+  pass_count: number
+  fail_count: number
+  manual_review_count: number
+  pass_rate: number
+  reference_checks: number
+  trend: TrendPoint[]
+  defect_distribution: DefectCount[]
+  recent: HistoryEntry[]
+}
+
+export interface ReferenceComponent {
+  ref: string
+  type: string
+  x: number
+  y: number
+}
+
+export interface ReferenceBoard {
+  name: string
+  image_path: string
+  components: ReferenceComponent[]
+}
+
+export interface ReferenceSummary {
+  name: string
+  component_count: number
+  image_path: string
+}
+
+export interface ModelCard {
+  id: string
+  name: string
+  role: string
+  status: 'active' | 'configured' | 'disabled'
+  weights: string | null
+  map50: number | null
+  map50_95: number | null
+  source: string
+  classes: string[]
+  note: string
+}
+
+export interface ModelPerformance {
+  measured_in_app: boolean
+  models: ModelCard[]
+  unmeasured_metrics: string[]
+  limitations: string[]
+}
+
+export interface SettingsResponse {
+  device: string
+  engine: EngineMode
+  defect_model: string
+  component_model: string | null
+  conf_threshold: number
+  class_thresholds_applied: boolean
+  component_conf_threshold: number
+  component_imgsz: number
+  reference_component_min_confidence: number
+  reference_match_distance_ratio: number
+  reference_shift_distance_ratio: number
+  min_image_width: number
+  min_image_height: number
+  max_upload_mb: number
+}
