@@ -1,0 +1,31 @@
+{
+  "inspection-loading": {
+    "image": "neazu_solder__2471100EPA__20240722125326048_jpg__t0_0.jpg",
+    "note": "Analiz sırasında görüntü işleniyor durumu",
+    "errors": []
+  },
+  "inspection-pass": {
+    "image": "neazu_solder__2471100EPA__20240722125326048_jpg__t0_0.jpg",
+    "reference": null,
+    "verdict": "PASS",
+    "defects": 0,
+    "image_id": "10cf2c54-1007-4db4-a708-534eba1db8dd",
+    "errors": []
+  },
+  "inspection-manual-review": {
+    "image": "neazu_solder__2471100EPA__20240722125326048_jpg__t1920_0.jpg",
+    "reference": null,
+    "verdict": "MANUAL_REVIEW",
+    "defects": 1,
+    "image_id": "ad6d7347-e86f-4cf6-99c0-a03966bbc804",
+    "errors": []
+  },
+  "inspection-with-reference": {
+    "image": "cv_solder_splash__20200707_101034_jpg.jpg",
+    "reference": "demo",
+    "verdict": "FAIL",
+    "defects": 3,
+    "image_id": "7816555e-8f46-4976-8c86-3fe370b4974f",
+    "errors": []
+  }
+}

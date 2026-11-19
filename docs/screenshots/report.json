@@ -1,0 +1,177 @@
+{
+  "pages": {
+    "overview": {
+      "url": "http://127.0.0.1:5173/#/overview",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpErrors": [],
+      "title": "PCB Inspection System"
+    },
+    "inspection-empty": {
+      "url": "http://127.0.0.1:5173/#/inspection",
+      "consoleErrors": [],
+      "httpErrors": [],
+      "title": "PCB Inspection System"
+    },
+    "history": {
+      "url": "http://127.0.0.1:5173/#/history",
+      "consoleErrors": [],
+      "httpErrors": [],
+      "title": "PCB Inspection System"
+    },
+    "reference": {
+      "url": "http://127.0.0.1:5173/#/reference",
+      "consoleErrors": [],
+      "httpErrors": [],
+      "title": "PCB Inspection System"
+    },
+    "reports": {
+      "url": "http://127.0.0.1:5173/#/reports",
+      "consoleErrors": [],
+      "httpErrors": [],
+      "title": "PCB Inspection System"
+    },
+    "models": {
+      "url": "http://127.0.0.1:5173/#/models",
+      "consoleErrors": [],
+      "httpErrors": [],
+      "title": "PCB Inspection System"
+    },
+    "settings": {
+      "url": "http://127.0.0.1:5173/#/settings",
+      "consoleErrors": [],
+      "httpErrors": [],
+      "title": "PCB Inspection System"
+    }
+  },
+  "classes": {
+    "insufficient_solder": {
+      "image": "numeric123__183_png_jpg.jpg",
+      "expected": {
+        "image": "numeric123__183_png_jpg.jpg",
+        "confidence": 0.8015,
+        "threshold": 0.297,
+        "count": 17
+      },
+      "image_id": "0d6e8154-fd84-4497-852d-8cc32caecbdd",
+      "verdict": "FAIL",
+      "defect_count": 17,
+      "top_defect": "insufficient_solder",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "excess_solder": {
+      "image": "neazu_solder__2471100EXX__20240722145302018_jpg__t2880_960.jpg",
+      "expected": {
+        "image": "neazu_solder__2471100EXX__20240722145302018_jpg__t2880_960.jpg",
+        "confidence": 0.8261,
+        "threshold": 0.349,
+        "count": 8
+      },
+      "image_id": "10f3e6d9-f56e-4408-b137-9e06a78141db",
+      "verdict": "FAIL",
+      "defect_count": 8,
+      "top_defect": "excess_solder",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "solder_bridge": {
+      "image": "numeric123__WIN_20221206_11_45_59_Pro_jpg.jpg",
+      "expected": {
+        "image": "numeric123__WIN_20221206_11_45_59_Pro_jpg.jpg",
+        "confidence": 0.8298,
+        "threshold": 0.417,
+        "count": 5
+      },
+      "image_id": "46a7720d-e7a5-4bde-8e9f-23767af4ddbe",
+      "verdict": "FAIL",
+      "defect_count": 5,
+      "top_defect": "solder_bridge",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "solder_void": {
+      "image": "neazu_solder__2471100EQ5__20240722124713063_jpg__t1920_960.jpg",
+      "expected": {
+        "image": "neazu_solder__2471100EQ5__20240722124713063_jpg__t1920_960.jpg",
+        "confidence": 0.8662,
+        "threshold": 0.249,
+        "count": 8
+      },
+      "image_id": "bcfef483-5e32-4a57-9ada-cf1bbe4c6edc",
+      "verdict": "FAIL",
+      "defect_count": 14,
+      "top_defect": "solder_void",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "missing_component": {
+      "image": "numeric123__IMG_20230703_141740_jpg.jpg",
+      "expected": {
+        "image": "numeric123__IMG_20230703_141740_jpg.jpg",
+        "confidence": 0.8853,
+        "threshold": 0.381,
+        "count": 3
+      },
+      "image_id": "8835a8a5-e7d5-4bc3-b25c-168a83baf854",
+      "verdict": "FAIL",
+      "defect_count": 3,
+      "top_defect": "missing_component",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "shifted_component": {
+      "image": "sssssc_assembly__noise_0032_02_jpg.jpg",
+      "expected": {
+        "image": "sssssc_assembly__noise_0032_02_jpg.jpg",
+        "confidence": 0.9054,
+        "threshold": 0.389,
+        "count": 3
+      },
+      "image_id": "bd1cb643-596a-46e0-8cc3-d0f5e93f7bcb",
+      "verdict": "FAIL",
+      "defect_count": 3,
+      "top_defect": "shifted_component",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "burn": {
+      "image": "sssssc_assembly__changeLight_0032_03_jpg.jpg",
+      "expected": {
+        "image": "sssssc_assembly__changeLight_0032_03_jpg.jpg",
+        "confidence": 0.9258,
+        "threshold": 0.224,
+        "count": 3
+      },
+      "image_id": "84aebcfc-27f1-441a-afd4-b3c0cc6768c0",
+      "verdict": "FAIL",
+      "defect_count": 5,
+      "top_defect": "burn",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "physical_damage": {
+      "image": "sssssc_assembly__noise_0013_03_jpg.jpg",
+      "expected": {
+        "image": "sssssc_assembly__noise_0013_03_jpg.jpg",
+        "confidence": 0.8445,
+        "threshold": 0.214,
+        "count": 2
+      },
+      "image_id": "80c56e17-db7b-4565-ba37-7774e36eca68",
+      "verdict": "FAIL",
+      "defect_count": 2,
+      "top_defect": "physical_damage",
+      "consoleErrors": [],
+      "httpErrors": []
+    },
+    "oxidation": {
+      "image": null,
+      "note": "Test split’inde 0 ground-truth kutu; gerçek tespit örneği yok. Metrik satırı gösterilir.",
+      "consoleErrors": [],
+      "httpErrors": []
+    }
+  },
+  "issues": []
+}
