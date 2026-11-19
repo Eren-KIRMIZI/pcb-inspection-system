@@ -71,9 +71,25 @@ function App() {
         <section className="panel result-panel">
           <div className="result-header">
             <h2>Analiz Sonucu</h2>
-            <span className={`badge badge-${result.verdict.toLowerCase()}`}>
-              {result.verdict}
-            </span>
+            <div className="result-badges">
+              <span className={`badge badge-${result.verdict.toLowerCase()}`}>
+                {result.verdict}
+              </span>
+              <span className={`badge badge-${result.engine}`}>
+                {result.engine === 'mock' ? 'MOCK MOTOR' : 'GERÇEK MODEL'}
+              </span>
+            </div>
+          </div>
+
+          <div className="decision-reasons">
+            <h3>Karar Gerekçesi</h3>
+            <ul>
+              {result.decision.reasons.map((reason, index) => (
+                <li key={`${reason.code}-${index}`} className={`reason-${reason.severity}`}>
+                  <strong>{reason.code}</strong> · {reason.message}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="result-grid">
@@ -144,8 +160,16 @@ function App() {
           </div>
           <p className="muted">
             Hizalama: {result.reference_check.aligned ? 'başarılı' : 'yok'} · Beklenen:{' '}
-            {result.reference_check.expected_count} · Tespit edilen:{' '}
-            {result.reference_check.detected_count}
+            {result.reference_check.expected_count} · Eşleşen:{' '}
+            {result.reference_check.matched_count} · Ham tespit:{' '}
+            {result.reference_check.raw_component_detections} · Eşik üstü:{' '}
+            {result.reference_check.qualified_component_detections}
+          </p>
+          <p className="muted">
+            Eksik: {result.reference_check.missing_count} · Yanlış:{' '}
+            {result.reference_check.wrong_count} · Kaymış:{' '}
+            {result.reference_check.shifted_count} · Fazla:{' '}
+            {result.reference_check.extra_count}
           </p>
 
           {result.reference_check.issues.length > 0 ? (

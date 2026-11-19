@@ -93,6 +93,60 @@ button:disabled {
   color: #bfdbfe;
 }
 
+.badge-real {
+  background: #064e3b;
+  color: #a7f3d0;
+}
+
+.badge-mock {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.result-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.decision-reasons {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  background: #0b1220;
+}
+
+.decision-reasons h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.decision-reasons ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.decision-reasons li {
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.reason-critical,
+.reason-high {
+  color: #fca5a5;
+}
+
+.reason-medium {
+  color: #fcd34d;
+}
+
+.reason-info,
+.reason-low {
+  color: #93c5fd;
+}
+
 .upload-form input[type='text'] {
   padding: 0.6rem 0.8rem;
   border: 1px solid #334155;

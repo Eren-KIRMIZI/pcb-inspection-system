@@ -74,3 +74,22 @@ Amaç: projeyi bir YOLO demosundan güvenilir bir AOI kalite kontrol yazılımı
 5. **Ürünleştirme:** geçmiş kaydı, kullanıcı ayarları, PostgreSQL (çok kullanıcılı aşamada).
 
 Her aşama ayrı commit + push; mevcut testler her adımda çalıştırılacak.
+
+## Düzeltme durumu
+
+| Bulgu | Durum | Not |
+| --- | --- | --- |
+| C1 | ✅ Düzeltildi | Vite `/media` proxy eklendi; HTTP doğrulaması yapılacak. |
+| C2 | ✅ Düzeltildi | `DecisionContext` referans sonucunu da değerlendiriyor; referans hataları FAIL üretiyor. |
+| C3 | ✅ Düzeltildi | One-to-one eşleştirme, `extra_component`, güven eşiği ve ayrı sayıçlar eklendi. |
+| C4 | ✅ Düzeltildi | `decision.reasons` yapılandırıldı; raporlar karar gerekçesi + referans + model + süre içeriyor. |
+| C5 | ✅ Düzeltildi | `engine: real/mock` ve `MOCK_ENGINE` gerekçesi; mock asla PASS vermiyor. |
+| I1 | ✅ Düzeltildi | EXIF yönü uygulanıyor, min çözünürlük kontrolü eklendi; gereksiz yeniden kodlama kaldırıldı. |
+| I2 | ✅ Düzeltildi | Model yükleyicilerde çift kontrollü `threading.Lock`. |
+| I3 | ⏳ Kısmen | Model yolu eksikse anlaşılır `RuntimeError`; ortak hata şeması sonra. |
+| I5 | ✅ Düzeltildi | Hizalama başarısızlığı → MANUAL_REVIEW. |
+| I7 | ✅ Genişletildi | 23 test: karar, referans eşleştirme, yükleme doğrulama, hata durumları. |
+| I8 | ⏳ Bekliyor | Yapılandırılmış loglama sonraki aşamada. |
+| I9 | ⏳ Bekliyor | Profesyonel arayüz Aşama 2’de. |
+
+Doğrulanan demo sonucu (gerçek modellerle): 73 beklenen, 120 ham komponent tespiti, 73 eşik üstü, 73 eşleşen, 0 uyuşmazlık; karar FAIL ve gerekçesi yalnızca yüksek güvenli `excess_solder`.

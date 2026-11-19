@@ -1,12 +1,17 @@
 import json
+import threading
 from pathlib import Path
 from typing import Protocol
 
 from ..config import BASE_DIR, settings
-from ..schemas import Detection
+from ..schemas import Detection, EngineMode
 
 
 class Detector(Protocol):
+    engine: EngineMode
+    name: str
+    thresholds_applied: bool
+
     def predict(self, image_path: Path) -> list[Detection]: ...
 
 
@@ -15,13 +20,20 @@ def _resolve(path: Path) -> Path:
 
 
 class MockDetector:
-    """Model ağırlığı yokken uçtan uca akışı test etmek için boş sonuç döner."""
+    """Model ağırlığı yokken akışı test etmek için boş sonuç döner."""
+
+    engine: EngineMode = "mock"
+    name: str = "mock-detector"
+    thresholds_applied: bool = False
 
     def predict(self, image_path: Path) -> list[Detection]:
         return []
 
 
 class YoloDetector:
+    engine: EngineMode = "real"
+    thresholds_applied: bool = False
+
     def __init__(
         self,
         model_path: Path,
@@ -29,9 +41,13 @@ class YoloDetector:
         device: str,
         thresholds_path: Path | None = None,
     ) -> None:
+        if not model_path.exists():
+            raise RuntimeError(f"Model dosyası bulunamadı: {model_path}")
+
         from ultralytics import YOLO
 
         self.model = YOLO(str(model_path))
+        self.name = model_path.name
         self.conf = conf
         self.device = device
         self.thresholds: dict[str, float] = {}
@@ -52,6 +68,7 @@ class YoloDetector:
                     for key, value in raw.items()
                     if isinstance(value, (int, float))
                 }
+                self.thresholds_applied = bool(self.thresholds)
 
     def predict(self, image_path: Path) -> list[Detection]:
         results = self.model.predict(
@@ -83,18 +100,21 @@ class YoloDetector:
 
 
 _detector: Detector | None = None
+_detector_lock = threading.Lock()
 
 
 def get_detector() -> Detector:
     global _detector
     if _detector is None:
-        if settings.use_mock_detector or settings.model_path is None:
-            _detector = MockDetector()
-        else:
-            _detector = YoloDetector(
-                _resolve(settings.model_path),
-                settings.conf_threshold,
-                settings.device,
-                settings.thresholds_path,
-            )
+        with _detector_lock:
+            if _detector is None:
+                if settings.use_mock_detector or settings.model_path is None:
+                    _detector = MockDetector()
+                else:
+                    _detector = YoloDetector(
+                        _resolve(settings.model_path),
+                        settings.conf_threshold,
+                        settings.device,
+                        settings.thresholds_path,
+                    )
     return _detector

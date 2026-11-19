@@ -1,4 +1,3 @@
-import json
 import math
 import re
 from pathlib import Path
@@ -83,26 +82,41 @@ def compare_board(
     target_path: Path,
     detections: list[Detection] | None = None,
 ) -> ReferenceCheck:
-    """Beklenen komponentleri tespit edilenlerle karşılaştırır."""
+    """Beklenen komponentleri tekil eşleştirmeyle karşılaştırır.
 
-    reference_image = cv2.imread(str(BASE_DIR / reference.image_path))
+    Ham YOLO tespit sayısı komponent sayısı olarak kullanılmaz: yalnızca güven eşiğini
+    geçen tespitler eşleştirmeye katılır ve her tespit en fazla bir BOM satırına atanır.
+    """
+
+    reference_image_path = BASE_DIR / reference.image_path
+    reference_image = cv2.imread(str(reference_image_path))
     target_image = cv2.imread(str(target_path))
     if reference_image is None or target_image is None:
         raise ValueError("Referans veya test görüntüsü okunamadı")
 
     ref_h, ref_w = reference_image.shape[:2]
     target_h, target_w = target_image.shape[:2]
-    matrix = align_images(BASE_DIR / reference.image_path, target_path)
+    matrix = align_images(reference_image_path, target_path)
 
     if detections is None:
         detector = get_component_detector()
         detections = detector.predict(target_path) if detector else []
 
+    qualified = [
+        detection
+        for detection in detections
+        if detection.confidence >= settings.reference_component_min_confidence
+    ]
+    centers = [_center(detection) for detection in qualified]
+    used: set[int] = set()
+
     match_distance = max(12.0, target_w * settings.reference_match_distance_ratio)
     shift_distance = max(10.0, target_w * settings.reference_shift_distance_ratio)
 
     issues: list[ReferenceIssue] = []
-    for component in reference.components:
+    matched_count = 0
+
+    for component in sorted(reference.components, key=lambda item: item.ref):
         point = _map_point(
             component.x,
             component.y,
@@ -110,20 +124,28 @@ def compare_board(
             (target_w, target_h),
             matrix,
         )
-        candidates: list[tuple[float, Detection]] = []
-        for detection in detections:
-            center = _center(detection)
-            distance = math.hypot(center[0] - point[0], center[1] - point[1])
-            candidates.append((distance, detection))
-
-        expected_type = _normalize_type(component.type)
-        same_type = [
-            (distance, detection)
-            for distance, detection in candidates
-            if _normalize_type(detection.class_name) == expected_type
+        distances = [
+            (math.hypot(center[0] - point[0], center[1] - point[1]), index)
+            for index, center in enumerate(centers)
         ]
+        expected_type = _normalize_type(component.type)
+
+        same_type = sorted(
+            (
+                (distance, index)
+                for distance, index in distances
+                if index not in used
+                and distance <= match_distance
+                and _normalize_type(qualified[index].class_name) == expected_type
+            ),
+            key=lambda item: item[0],
+        )
+
         if same_type:
-            distance, detection = min(same_type, key=lambda item: item[0])
+            distance, index = same_type[0]
+            used.add(index)
+            matched_count += 1
+            detection = qualified[index]
             if distance > shift_distance:
                 issues.append(
                     ReferenceIssue(
@@ -137,13 +159,18 @@ def compare_board(
                 )
             continue
 
-        nearby = [
-            (distance, detection)
-            for distance, detection in candidates
-            if distance <= match_distance
-        ]
+        nearby = sorted(
+            (
+                (distance, index)
+                for distance, index in distances
+                if index not in used and distance <= match_distance
+            ),
+            key=lambda item: item[0],
+        )
         if nearby:
-            distance, detection = min(nearby, key=lambda item: item[0])
+            distance, index = nearby[0]
+            used.add(index)
+            detection = qualified[index]
             issues.append(
                 ReferenceIssue(
                     ref=component.ref,
@@ -163,10 +190,35 @@ def compare_board(
                 )
             )
 
+    for index, detection in enumerate(qualified):
+        if index in used:
+            continue
+        cx, cy = centers[index]
+        issues.append(
+            ReferenceIssue(
+                ref="—",
+                expected_type="—",
+                issue="extra_component",
+                detected_type=detection.class_name,
+                confidence=detection.confidence,
+                x=round(cx / target_w, 4),
+                y=round(cy / target_h, 4),
+            )
+        )
+
+    def count(issue_type: str) -> int:
+        return sum(1 for issue in issues if issue.issue == issue_type)
+
     return ReferenceCheck(
         reference=reference.name,
         aligned=matrix is not None,
         expected_count=len(reference.components),
-        detected_count=len(detections),
+        raw_component_detections=len(detections),
+        qualified_component_detections=len(qualified),
+        matched_count=matched_count,
+        missing_count=count("missing_component"),
+        wrong_count=count("wrong_component"),
+        shifted_count=count("shifted_component"),
+        extra_count=count("extra_component"),
         issues=issues,
     )
