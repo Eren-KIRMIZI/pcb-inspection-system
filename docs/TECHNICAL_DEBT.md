@@ -85,4 +85,11 @@ Bu pakette çözülenler:
 - `rotation_deg` yalnızca kartın global hizalama açısıdır; komponent rotasyonu/rotation_error ölçümü değildir (D4 kapsam dışı kararı korundu).
 - Gerçek referans + gerçek yüklenen görsel çiftinde: 5042 inlier, inlier oranı 1.00, ölçek 1.00, güvenilir. 5 yeni test eklendi (46 test toplam).
 
-Kalanlar sırayla ele alınacak: D3 (17-18), D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.
+### Adım 17 — global komponent eşleştirme (`feat: add component matching engine`)
+
+- **D3 (kısmen):** `services/matching.py` eklendi. BOM sırasına göre açgözlü en yakın komşu yerine `scipy.optimize.linear_sum_assignment` (Hungarian) ile minimum maliyetli bire-bir atama yapılıyor. Maliyet bileşenleri: normalize mesafe, tip uyuşmazlığı cezası (3.0), güven (0.4) ve bbox alan medyanı sapması (0.3, üst sınır 2.0). Eşik dışı çiftler atanmıyor; `missing_component` / `extra_component` olarak kalıyor.
+- `ReferenceCheck` mevcut alanları korundu; `MatchingInfo` (algoritma, toplam/ortalama maliyet, atama ve eşleşmeyen sayıları) eklendi ve arayüzde referans kartında gösteriliyor.
+- Açgözlü algoritmanın global optimumu kaçırdığı senaryo bir regresyon testiyle sabitlendi. 8 yeni test eklendi (54 test toplam).
+- `extra_component` kimliğindeki `ref="—"` ve decision mesajındaki `(—)` adım 18'de düzeltilecek.
+
+Kalanlar sırayla ele alınacak: D3/18 (fark analizi), D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.

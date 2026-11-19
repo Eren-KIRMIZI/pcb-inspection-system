@@ -44,6 +44,15 @@ class Settings(BaseSettings):
     alignment_max_scale: float = 5.0
     alignment_cache_size: int = 128
 
+    # Komponent eşleştirme maliyet ağırlıkları (AOI Engine 2.0 / adım 17)
+    # Tip uyuşmazlığı cezası, diğer tüm maliyet farklarının toplamından büyük olmalı;
+    # böylece doğru tip her zaman yanlış tipe tercih edilir.
+    matching_type_penalty: float = 3.0
+    matching_confidence_weight: float = 0.4
+    matching_area_weight: float = 0.3
+    matching_area_cap: float = 2.0
+    matching_invalid_cost: float = 1000.0
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

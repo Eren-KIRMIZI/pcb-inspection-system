@@ -49,10 +49,20 @@ export interface AlignmentInfo {
   reason: string
 }
 
+export interface MatchingInfo {
+  algorithm: string
+  cost_total: number
+  cost_mean: number | null
+  assignments: number
+  unmatched_components: number
+  unmatched_detections: number
+}
+
 export interface ReferenceCheck {
   reference: string
   aligned: boolean
   alignment: AlignmentInfo | null
+  matching: MatchingInfo | null
   expected_count: number
   raw_component_detections: number
   qualified_component_detections: number

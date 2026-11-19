@@ -80,6 +80,22 @@ class AlignmentInfo(BaseModel):
     reason: str
 
 
+class MatchingInfo(BaseModel):
+    """Global (Hungarian) komponent atamasının maliyet özeti.
+
+    ``cost_total`` yalnızca geçerli atamaların toplamıdır; eşik dışı çiftler
+    atanmaz ve maliyete dahil edilmez. ``unmatched_*`` sayıları eksik/fazla
+    komponent sayılarıyla örtüşür.
+    """
+
+    algorithm: str
+    cost_total: float
+    cost_mean: float | None = None
+    assignments: int
+    unmatched_components: int
+    unmatched_detections: int
+
+
 class ReferenceCheck(BaseModel):
     reference: str
     aligned: bool
@@ -93,6 +109,7 @@ class ReferenceCheck(BaseModel):
     shifted_count: int
     extra_count: int
     issues: list[ReferenceIssue]
+    matching: MatchingInfo | None = None
 
 
 class ModelInfo(BaseModel):

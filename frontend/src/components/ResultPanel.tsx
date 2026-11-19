@@ -87,11 +87,16 @@ function ReferenceSection({ result }: { result: InspectionResult }) {
       `inlier %${(alignment.inlier_ratio * 100).toFixed(0)} (${alignment.inlier_count}) · ` +
       `ölçek ${alignment.scale?.toFixed(2) ?? '—'} · neden: ${alignment.reason}`
     : `Ref: ${check.reference} · Hizalama: ${check.aligned ? 'başarılı' : 'başarısız'}`
+  const matching = check.matching
+  const matchingDetail = matching
+    ? ` · eşleştirme: ${matching.algorithm}, ${matching.assignments} atama, ` +
+      `maliyet ${matching.cost_total.toFixed(2)}`
+    : ''
 
   return (
     <Card
       title="Referans / BOM Kontrolü"
-      subtitle={alignmentDetail}
+      subtitle={alignmentDetail + matchingDetail}
     >
       <div className="mini-stats">
         <div><span>Beklenen</span><strong>{check.expected_count}</strong></div>

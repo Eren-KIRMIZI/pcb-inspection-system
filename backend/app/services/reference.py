@@ -1,4 +1,3 @@
-import math
 import re
 from pathlib import Path
 
@@ -10,12 +9,14 @@ from ..errors import ImageReadError
 from ..schemas import (
     AlignmentInfo,
     Detection,
+    MatchingInfo,
     ReferenceBoard,
     ReferenceCheck,
     ReferenceIssue,
 )
 from .alignment import align_images
 from .components import get_component_detector
+from .matching import build_cost_matrix, match_components
 
 TYPE_ALIASES = {
     "r": "resistor",
@@ -123,95 +124,84 @@ def compare_board(
         for detection in detections
         if detection.confidence >= settings.reference_component_min_confidence
     ]
+    components = sorted(reference.components, key=lambda item: item.ref)
     centers = [_center(detection) for detection in qualified]
-    used: set[int] = set()
-
-    match_distance = max(12.0, target_w * settings.reference_match_distance_ratio)
-    shift_distance = max(10.0, target_w * settings.reference_shift_distance_ratio)
-
-    issues: list[ReferenceIssue] = []
-    matched_count = 0
-
-    for component in sorted(reference.components, key=lambda item: item.ref):
-        point = _map_point(
+    points = [
+        _map_point(
             component.x,
             component.y,
             (ref_w, ref_h),
             (target_w, target_h),
             matrix,
         )
-        distances = [
-            (math.hypot(center[0] - point[0], center[1] - point[1]), index)
-            for index, center in enumerate(centers)
-        ]
-        expected_type = _normalize_type(component.type)
+        for component in components
+    ]
+    expected_types = [_normalize_type(component.type) for component in components]
+    detected_types = [
+        _normalize_type(detection.class_name) for detection in qualified
+    ]
 
-        same_type = sorted(
-            (
-                (distance, index)
-                for distance, index in distances
-                if index not in used
-                and distance <= match_distance
-                and _normalize_type(qualified[index].class_name) == expected_type
-            ),
-            key=lambda item: item[0],
-        )
+    match_distance = max(12.0, target_w * settings.reference_match_distance_ratio)
+    shift_distance = max(10.0, target_w * settings.reference_shift_distance_ratio)
 
-        if same_type:
-            distance, index = same_type[0]
-            used.add(index)
+    # D3: BOM sırasına göre açgözlü eşleştirme yerine global minimum maliyetli
+    # bire-bir atama (Hungarian). Maliyet mesafe/tip/güven/alan bileşenlerinden
+    # oluşur; eşik dışı çiftler atanamaz ve "missing"/"extra" olarak kalır.
+    costs = build_cost_matrix(
+        points, centers, qualified, expected_types, detected_types, match_distance
+    )
+    matching = match_components(
+        costs, points, centers, expected_types, detected_types, match_distance
+    )
+
+    issues: list[ReferenceIssue] = []
+    matched_count = 0
+
+    for assignment in matching.assignments:
+        component = components[assignment.component_index]
+        detection = qualified[assignment.detection_index]
+        if assignment.type_matched:
             matched_count += 1
-            detection = qualified[index]
-            if distance > shift_distance:
+            if assignment.distance > shift_distance:
                 issues.append(
                     ReferenceIssue(
                         ref=component.ref,
                         expected_type=component.type,
                         issue="shifted_component",
-                        distance_px=round(distance, 1),
+                        distance_px=round(assignment.distance, 1),
                         detected_type=detection.class_name,
                         confidence=detection.confidence,
                     )
                 )
-            continue
-
-        nearby = sorted(
-            (
-                (distance, index)
-                for distance, index in distances
-                if index not in used and distance <= match_distance
-            ),
-            key=lambda item: item[0],
-        )
-        if nearby:
-            distance, index = nearby[0]
-            used.add(index)
-            detection = qualified[index]
-            issues.append(
-                ReferenceIssue(
-                    ref=component.ref,
-                    expected_type=component.type,
-                    issue="wrong_component",
-                    distance_px=round(distance, 1),
-                    detected_type=detection.class_name,
-                    confidence=detection.confidence,
-                )
-            )
         else:
             issues.append(
                 ReferenceIssue(
                     ref=component.ref,
                     expected_type=component.type,
-                    issue="missing_component",
+                    issue="wrong_component",
+                    distance_px=round(assignment.distance, 1),
+                    detected_type=detection.class_name,
+                    confidence=detection.confidence,
                 )
             )
 
-    for index, detection in enumerate(qualified):
-        if index in used:
-            continue
+    for index in matching.unmatched_components:
+        component = components[index]
+        issues.append(
+            ReferenceIssue(
+                ref=component.ref,
+                expected_type=component.type,
+                issue="missing_component",
+            )
+        )
+
+    for index in matching.unmatched_detections:
+        detection = qualified[index]
         cx, cy = centers[index]
         issues.append(
             ReferenceIssue(
+                # Adım 18'de anlamlı bir atama kimliği üretilecek; şimdilik
+                # mevcut şema korunuyor (D3 kapsamı yalnızca global atama).
                 ref="—",
                 expected_type="—",
                 issue="extra_component",
@@ -238,4 +228,14 @@ def compare_board(
         shifted_count=count("shifted_component"),
         extra_count=count("extra_component"),
         issues=issues,
+        matching=MatchingInfo(
+            algorithm="hungarian",
+            cost_total=matching.cost_total,
+            cost_mean=round(matching.cost_mean, 4)
+            if matching.cost_mean is not None
+            else None,
+            assignments=len(matching.assignments),
+            unmatched_components=len(matching.unmatched_components),
+            unmatched_detections=len(matching.unmatched_detections),
+        ),
     )
