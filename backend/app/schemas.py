@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -28,7 +29,7 @@ class Detection(BaseModel):
 
 class InspectionResult(BaseModel):
     image_id: UUID
-    verdict: str
+    verdict: Literal["PASS", "FAIL", "MANUAL_REVIEW"]
     defects: list[Detection]
     counts: dict[str, int]
     annotated_image_path: str | None = None

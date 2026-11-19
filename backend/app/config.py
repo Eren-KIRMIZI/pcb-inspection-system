@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     device: str = "cpu"
     conf_threshold: float = 0.25
     use_mock_detector: bool = True
+    manual_review_min_confidence: float = 0.40
+    fail_min_confidence: float = 0.65
 
     model_config = SettingsConfigDict(
         env_file=".env",

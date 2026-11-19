@@ -5,6 +5,7 @@ from uuid import UUID
 from ..config import BASE_DIR
 from ..schemas import InspectionResult
 from .annotation import draw_detections
+from .decision import decide
 from .detector import get_detector
 
 
@@ -25,7 +26,7 @@ def inspect_image(image_id: UUID, stored_path: str) -> InspectionResult:
 
     return InspectionResult(
         image_id=image_id,
-        verdict="FAIL" if detections else "PASS",
+        verdict=decide(detections),
         defects=detections,
         counts=counts,
         annotated_image_path=_relative(annotated_path),
