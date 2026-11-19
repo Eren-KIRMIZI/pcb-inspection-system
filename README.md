@@ -36,7 +36,8 @@ Yerel model eğitimi yoktur; yalnızca hazır `.pt` ağırlıkları kullanılır
 - **Aşama 1 — güvenilirlik ve karar motoru:** gerçek YOLO çıkarımı, sınıf eşikleri, referans eşleştirme, gerekçeli karar, mock/gerçek ayrımı, görüntü doğrulama, kilitli model yükleyici, hata şeması, testler. ✅
 - **Aşama 2 — arayüz:** Industrial Dark tema, 7 sayfalık hash router, zoom/pan görüntüleyici, geçmiş/raporlar, gerçek metriklerle model ekranı. ✅
 - **Aşama 3 — operasyonel izlenebilirlik:** ortak API hata gövdesi, `X-Request-ID`, yapılandırılmış JSON log. ✅
-- **Sonraki:** one-to-one eşleştirme iyileştirmeleri, tiling/SAHI, gerçek metrik değerlendirmesi, çok kullanıcılı veri katmanı. Kamera/donanım bu sürümde yoktur.
+- **Aşama 4 — AOI Engine 2.0:** güvenli SIFT/RANSAC hizalaması, global komponent eşleştirme (Hungarian), izlenebilir fark analizi, tiling, gerçek test split'iyle uygulama içi değerlendirme, sınıf bazlı metrikler ve karar eşiklerinin izlenebilirliği. ✅
+- **Sonraki:** çok kullanıcılı veri katmanı. Kamera/donanım, lokal model eğitimi, rotasyon/konum analizi ve containerization bu sürümde yoktur.
 
 ## Veri setleri
 
@@ -76,6 +77,17 @@ Testler:
 ```powershell
 .\.venv\Scripts\python.exe -m pytest backend\tests -q
 ```
+
+Uygulama içi değerlendirme (gerçek model + gerçek test split'i; mock motor aktifse reddedilir):
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.scripts.evaluate_model --split test
+# hızlı kontrol: --limit 5
+```
+
+Sonuç `data/evaluation/solder-defect-test.json` dosyasına yazılır (gitignored). `/api/v1/models`
+yalnızca gerçek bir ölçüm dosyası varsa `measured_in_app=true` döner ve sınıf bazlı sonuçları
+model kartı metriklerinden ayrı bir panelde gösterir; dosya yoksa "ölçülmedi" olarak kalır.
 
 ## API ve hata şeması
 
