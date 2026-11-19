@@ -110,10 +110,11 @@ def _reference_reasons(check: ReferenceCheck) -> list[DecisionReason]:
     for issue in check.issues:
         severity = REFERENCE_ISSUE_SEVERITY.get(issue.issue, "high")
         message = REFERENCE_ISSUE_MESSAGE.get(issue.issue, issue.issue)
+        ref = issue.ref if issue.ref and issue.ref != "—" else None
         if issue.distance_px is not None:
-            message += f" ({issue.ref}, {issue.distance_px} px)"
-        elif issue.ref:
-            message += f" ({issue.ref})"
+            message += f" ({ref or 'konum'}, {issue.distance_px} px)"
+        elif ref:
+            message += f" ({ref})"
         reasons.append(
             _reason(
                 f"REFERENCE_{issue.issue.upper()}",

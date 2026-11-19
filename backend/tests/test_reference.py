@@ -77,6 +77,7 @@ def test_extra_component_is_reported(tmp_path: Path) -> None:
     assert check.extra_count == 1
     assert check.issues[0].issue == "extra_component"
     assert check.issues[0].detected_type == "Capacitor"
+    assert check.issues[0].ref == "EXTRA-capacitor@0.950,0.950"
 
 
 def test_low_confidence_detection_is_ignored(tmp_path: Path) -> None:

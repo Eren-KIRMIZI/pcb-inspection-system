@@ -92,4 +92,9 @@ Bu pakette çözülenler:
 - Açgözlü algoritmanın global optimumu kaçırdığı senaryo bir regresyon testiyle sabitlendi. 8 yeni test eklendi (54 test toplam).
 - `extra_component` kimliğindeki `ref="—"` ve decision mesajındaki `(—)` adım 18'de düzeltilecek.
 
-Kalanlar sırayla ele alınacak: D3/18 (fark analizi), D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.
+### Adım 18 — fark analizi (`fix: make extra-component findings traceable`)
+
+- **D3 (tamamlandı):** Fazla komponent tespitleri artık `ref="—"` almıyor; tespit tipi ve normalize konumdan `EXTRA-<tip>@<x>,<y>` biçiminde yeniden üretilebilir bir kimlik üretiliyor (örn. `EXTRA-capacitor@0.950,0.950`). Karar motoru `—` yer tutucusunu mesaja yazmıyor; `REFERENCE_EXTRA_COMPONENT` gerekçesi anlamlı kimliği gösteriyor.
+- Beklenen/detected tip, güven ve normalize koordinatlar `ReferenceIssue` içinde korundu; şema uyumluluğu değişmedi.
+
+Kalanlar sırayla ele alınacak: D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.

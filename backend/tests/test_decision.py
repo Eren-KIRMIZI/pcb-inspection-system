@@ -106,6 +106,30 @@ def test_extra_component_fails() -> None:
     assert decision.verdict == "FAIL"
 
 
+def test_extra_component_reason_has_meaningful_ref() -> None:
+    issue = ReferenceIssue(
+        ref="EXTRA-capacitor@0.420,0.680",
+        expected_type="—",
+        issue="extra_component",
+        detected_type="capacitor",
+        confidence=0.9,
+    )
+    decision = decide(_context(reference=_reference([issue])))
+
+    reason = next(
+        item for item in decision.reasons if item.code == "REFERENCE_EXTRA_COMPONENT"
+    )
+    assert "EXTRA-capacitor@0.420,0.680" in reason.message
+    assert "(—)" not in reason.message
+
+
+def test_placeholder_ref_is_never_shown_in_reason_message() -> None:
+    issue = ReferenceIssue(ref="—", expected_type="—", issue="extra_component")
+    decision = decide(_context(reference=_reference([issue])))
+
+    assert all("(—)" not in item.message for item in decision.reasons)
+
+
 def test_reasons_include_source_and_severity() -> None:
     decision = decide(_context([_detection("excess_solder", 0.9)]))
     assert all(reason.source in {"defect", "reference", "quality", "engine"} for reason in decision.reasons)

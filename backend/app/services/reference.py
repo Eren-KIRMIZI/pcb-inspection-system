@@ -198,17 +198,21 @@ def compare_board(
     for index in matching.unmatched_detections:
         detection = qualified[index]
         cx, cy = centers[index]
+        nx, ny = cx / target_w, cy / target_h
+        # D3: "—" karar mesajında anlamsız bir "(—)" üretiyordu. Fazla komponent
+        # için tip + normalize konumdan yeniden üretilebilir bir kimlik oluştur.
+        extra_ref = (
+            f"EXTRA-{detected_types[index]}@{nx:.3f},{ny:.3f}"
+        )
         issues.append(
             ReferenceIssue(
-                # Adım 18'de anlamlı bir atama kimliği üretilecek; şimdilik
-                # mevcut şema korunuyor (D3 kapsamı yalnızca global atama).
-                ref="—",
+                ref=extra_ref,
                 expected_type="—",
                 issue="extra_component",
                 detected_type=detection.class_name,
                 confidence=detection.confidence,
-                x=round(cx / target_w, 4),
-                y=round(cy / target_h, 4),
+                x=round(nx, 4),
+                y=round(ny, 4),
             )
         )
 
