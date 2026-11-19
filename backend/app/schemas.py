@@ -109,3 +109,89 @@ class InspectionResult(BaseModel):
     report_pdf_path: str | None = None
     reference_check: ReferenceCheck | None = None
     created_at: datetime
+
+
+class HistoryEntry(BaseModel):
+    image_id: UUID
+    created_at: datetime
+    filename: str
+    verdict: Verdict
+    engine: EngineMode
+    defect_count: int
+    top_defect: str | None = None
+    reference_name: str | None = None
+    reference_issues: int = 0
+    duration_ms: int
+    image_width: int
+    image_height: int
+    annotated_image_path: str | None = None
+    report_json_path: str | None = None
+    report_pdf_path: str | None = None
+
+
+class TrendPoint(BaseModel):
+    date: str
+    total: int
+    pass_count: int
+    fail_count: int
+    manual_review_count: int
+
+
+class DefectCount(BaseModel):
+    class_name: str
+    count: int
+
+
+class OverviewStats(BaseModel):
+    total_inspections: int
+    pass_count: int
+    fail_count: int
+    manual_review_count: int
+    pass_rate: float
+    reference_checks: int
+    trend: list[TrendPoint]
+    defect_distribution: list[DefectCount]
+    recent: list[HistoryEntry]
+
+
+class ReferenceSummary(BaseModel):
+    name: str
+    component_count: int
+    image_path: str
+
+
+class ModelCard(BaseModel):
+    id: str
+    name: str
+    role: str
+    status: Literal["active", "configured", "disabled"]
+    weights: str | None = None
+    map50: float | None = None
+    map50_95: float | None = None
+    source: str
+    classes: list[str] = []
+    note: str
+
+
+class ModelPerformance(BaseModel):
+    measured_in_app: bool
+    models: list[ModelCard]
+    unmeasured_metrics: list[str]
+    limitations: list[str]
+
+
+class SettingsResponse(BaseModel):
+    device: str
+    engine: EngineMode
+    defect_model: str
+    component_model: str | None
+    conf_threshold: float
+    class_thresholds_applied: bool
+    component_conf_threshold: float
+    component_imgsz: int
+    reference_component_min_confidence: float
+    reference_match_distance_ratio: float
+    reference_shift_distance_ratio: float
+    min_image_width: int
+    min_image_height: int
+    max_upload_mb: int

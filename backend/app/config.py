@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     data_dir: Path = BASE_DIR / "data"
     upload_dir: Path = BASE_DIR / "data" / "uploads"
     results_dir: Path = BASE_DIR / "data" / "results"
+    history_db_path: Path | None = None
     max_upload_mb: int = 20
     min_image_width: int = 320
     min_image_height: int = 240

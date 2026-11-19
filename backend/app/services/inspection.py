@@ -13,6 +13,7 @@ from .annotation import draw_detections
 from .components import get_component_detector
 from .decision import DecisionContext, decide
 from .detector import get_detector
+from .history import save_result
 from .reference import compare_board
 from .report import generate_reports
 
@@ -90,4 +91,5 @@ def inspect_image(
         created_at=datetime.now(timezone.utc),
     )
     result.report_json_path, result.report_pdf_path = generate_reports(result)
+    save_result(result)
     return result

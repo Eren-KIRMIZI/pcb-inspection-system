@@ -1,7 +1,13 @@
 import json
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 
-from ..schemas import ReferenceBoard, ReferenceComponent, UploadedImage
+from ..config import settings
+from ..schemas import (
+    ReferenceBoard,
+    ReferenceComponent,
+    ReferenceSummary,
+    UploadedImage,
+)
 from ..services.reference import load_reference, save_reference
 from ..services.storage import save_upload
 
@@ -35,6 +41,27 @@ async def create_reference(
         ) from exc
 
     return board
+
+
+@router.get("", response_model=list[ReferenceSummary])
+def list_references() -> list[ReferenceSummary]:
+    directory = settings.data_dir / "references"
+    if not directory.exists():
+        return []
+    boards: list[ReferenceSummary] = []
+    for path in sorted(directory.glob("*.json")):
+        try:
+            board = ReferenceBoard.model_validate_json(path.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            continue
+        boards.append(
+            ReferenceSummary(
+                name=board.name,
+                component_count=len(board.components),
+                image_path=board.image_path,
+            )
+        )
+    return boards
 
 
 @router.get("/{name}", response_model=ReferenceBoard)
