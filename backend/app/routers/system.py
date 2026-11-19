@@ -58,7 +58,11 @@ def get_models() -> ModelPerformance:
         "Sınıf bazlı eşikler thresholds.json dosyasından uygulanır."
     )
     if measured_in_app:
-        defect_note += " Gerçek test split'i üzerinde uygulama içi ölçüm de mevcuttur."
+        defect_note = (
+            "Kart metrikleri model kartından alınmıştır; aynı modelin gerçek test split'i "
+            "üzerindeki uygulama içi ölçümü ayrı panelde gösterilir. "
+            "Sınıf bazlı eşikler thresholds.json dosyasından uygulanır."
+        )
 
     models = [
         ModelCard(

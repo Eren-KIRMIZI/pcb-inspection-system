@@ -94,11 +94,11 @@ export function ModelPerformance() {
                       <tr key={item.class_name}>
                         <td>{defectLabel(item.class_name)}</td>
                         <td className="mono">{item.support}</td>
-                        <td className="mono">{percent(item.precision)}</td>
-                        <td className="mono">{percent(item.recall)}</td>
-                        <td className="mono">{percent(item.f1)}</td>
-                        <td className="mono">{item.ap50.toFixed(3)}</td>
-                        <td className="mono">{item.ap50_95.toFixed(3)}</td>
+                        <td className="mono">{item.support > 0 ? percent(item.precision) : '—'}</td>
+                        <td className="mono">{item.support > 0 ? percent(item.recall) : '—'}</td>
+                        <td className="mono">{item.support > 0 ? percent(item.f1) : '—'}</td>
+                        <td className="mono">{item.support > 0 ? item.ap50.toFixed(3) : '—'}</td>
+                        <td className="mono">{item.support > 0 ? item.ap50_95.toFixed(3) : '—'}</td>
                         <td className="mono">{item.tp} / {item.fp} / {item.fn}</td>
                       </tr>
                     ))}
