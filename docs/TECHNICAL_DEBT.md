@@ -97,4 +97,12 @@ Bu pakette çözülenler:
 - **D3 (tamamlandı):** Fazla komponent tespitleri artık `ref="—"` almıyor; tespit tipi ve normalize konumdan `EXTRA-<tip>@<x>,<y>` biçiminde yeniden üretilebilir bir kimlik üretiliyor (örn. `EXTRA-capacitor@0.950,0.950`). Karar motoru `—` yer tutucusunu mesaja yazmıyor; `REFERENCE_EXTRA_COMPONENT` gerekçesi anlamlı kimliği gösteriyor.
 - Beklenen/detected tip, güven ve normalize koordinatlar `ReferenceIssue` içinde korundu; şema uyumluluğu değişmedi.
 
-Kalanlar sırayla ele alınacak: D5 (20), D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.
+### Adım 20 — tiling ve çıkarım ayarları (`feat: add tiled defect inference`)
+
+- **D5:** `services/tiling.py` eklendi: örtüşen tile üretimi, tile yerel kutularının tam görsele geri map'i, sınıf bazlı/güven öncelikli NMS. `YoloDetector` `imgsz` ayarını kullanıyor ve `tiling_enabled` açıldığında tile'ları birleştirip tekrarları temizliyor. Varsayılan `TILING_ENABLED=false`; mevcut tam görsel çıkarımı ve 2 gerçek kayıt etkilenmiyor.
+- Sınıf eşikleri (`thresholds.json`) hem tam görsel hem tile modunda aynı şekilde uygulanıyor; regresyon testi eklendi.
+- `DETECTOR_IMGSZ`, `TILE_SIZE`, `TILE_OVERLAP`, `TILE_NMS_IOU` ayarları `/settings` üzerinden de görünür. 8 yeni test eklendi (64 test toplam).
+
+Adım 19 uygulanmadı: rotasyon/konum analizi kapsam dışı kararı (D4) korundu; bbox'tan açı türetilmiyor.
+
+Kalanlar sırayla ele alınacak: D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.

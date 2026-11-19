@@ -3,9 +3,12 @@ import threading
 from pathlib import Path
 from typing import Protocol
 
+import cv2
+
 from ..config import BASE_DIR, settings
 from ..errors import ModelUnavailableError
 from ..schemas import Detection, EngineMode
+from .tiling import generate_tiles, map_bbox, nms_detections
 
 
 class Detector(Protocol):
@@ -41,6 +44,7 @@ class YoloDetector:
         conf: float,
         device: str,
         thresholds_path: Path | None = None,
+        imgsz: int = 640,
     ) -> None:
         if not model_path.exists():
             raise ModelUnavailableError(f"Model dosyası bulunamadı: {model_path}")
@@ -51,6 +55,7 @@ class YoloDetector:
         self.name = model_path.name
         self.conf = conf
         self.device = device
+        self.imgsz = imgsz
         self.thresholds: dict[str, float] = {}
 
         if thresholds_path is not None:
@@ -64,17 +69,44 @@ class YoloDetector:
                         if isinstance(nested, dict):
                             raw = nested
                             break
-                self.thresholds = {
-                    str(key): float(value)
-                    for key, value in raw.items()
-                    if isinstance(value, (int, float))
-                }
-                self.thresholds_applied = bool(self.thresholds)
+                    self.thresholds = {
+                        str(key): float(value)
+                        for key, value in raw.items()
+                        if isinstance(value, (int, float))
+                    }
+                    self.thresholds_applied = bool(self.thresholds)
 
-    def predict(self, image_path: Path) -> list[Detection]:
+    def _to_detection(
+        self, box: object, offset: tuple[float, float] = (0.0, 0.0)
+    ) -> Detection | None:
+        """YOLO kutusunu sınıf eşiği kontrolünden sonra ``Detection`` yapar.
+
+        Sınıf eşikleri ``thresholds.json`` değerlerinden gelir; tile modunda da
+        aynı eşikler uygulanır (D5 gereksinimi).
+        """
+
+        class_id = int(box.cls[0])  # type: ignore[attr-defined]
+        class_name = self.model.names.get(class_id, str(class_id))
+        confidence = float(box.conf[0])  # type: ignore[attr-defined]
+        threshold = self.thresholds.get(class_name, self.conf)
+        if confidence < threshold:
+            return None
+        bbox = [float(value) for value in box.xyxy[0]]  # type: ignore[attr-defined]
+        ox, oy = offset
+        return Detection(
+            class_id=class_id,
+            class_name=class_name,
+            confidence=confidence,
+            bbox=[bbox[0] + ox, bbox[1] + oy, bbox[2] + ox, bbox[3] + oy],
+        )
+
+    def _detect(
+        self, source: object, offset: tuple[float, float] = (0.0, 0.0)
+    ) -> list[Detection]:
         results = self.model.predict(
-            source=str(image_path),
+            source=source,
             conf=self.conf,
+            imgsz=self.imgsz,
             device=self.device,
             verbose=False,
         )
@@ -83,21 +115,30 @@ class YoloDetector:
             if result.boxes is None:
                 continue
             for box in result.boxes:
-                class_id = int(box.cls[0])
-                class_name = self.model.names.get(class_id, str(class_id))
-                confidence = float(box.conf[0])
-                threshold = self.thresholds.get(class_name, self.conf)
-                if confidence < threshold:
-                    continue
-                detections.append(
-                    Detection(
-                        class_id=class_id,
-                        class_name=class_name,
-                        confidence=confidence,
-                        bbox=[float(value) for value in box.xyxy[0]],
-                    )
-                )
+                detection = self._to_detection(box, offset)
+                if detection is not None:
+                    detections.append(detection)
         return detections
+
+    def predict(self, image_path: Path) -> list[Detection]:
+        """Tiling kapalıysa tam görseli, açıksa örtüşen tile'ları çıkarır."""
+
+        if not settings.tiling_enabled:
+            return self._detect(str(image_path))
+
+        image = cv2.imread(str(image_path))
+        if image is None:
+            return []
+        height, width = image.shape[:2]
+        detections: list[Detection] = []
+        for tile in generate_tiles(
+            width, height, settings.tile_size, settings.tile_overlap
+        ):
+            crop = image[tile.y1 : tile.y2, tile.x1 : tile.x2]
+            detections.extend(
+                self._detect(crop, (float(tile.x1), float(tile.y1)))
+            )
+        return nms_detections(detections, settings.tile_nms_iou)
 
 
 _detector: Detector | None = None
@@ -123,5 +164,6 @@ def get_detector() -> Detector:
                         settings.conf_threshold,
                         settings.device,
                         settings.thresholds_path,
+                        settings.detector_imgsz,
                     )
     return _detector

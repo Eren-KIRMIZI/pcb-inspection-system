@@ -247,6 +247,11 @@ class SettingsResponse(BaseModel):
     component_model: str | None
     conf_threshold: float
     class_thresholds_applied: bool
+    detector_imgsz: int
+    tiling_enabled: bool
+    tile_size: int
+    tile_overlap: float
+    tile_nms_iou: float
     component_conf_threshold: float
     component_imgsz: int
     reference_component_min_confidence: float

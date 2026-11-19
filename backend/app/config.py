@@ -53,6 +53,14 @@ class Settings(BaseSettings):
     matching_area_cap: float = 2.0
     matching_invalid_cost: float = 1000.0
 
+    # Kusur çıkarımı ve tiling (AOI Engine 2.0 / adım 20)
+    # Tiling varsayılan kapalıdır; açıldığında sınıf eşikleri aynen uygulanır.
+    detector_imgsz: int = 640
+    tiling_enabled: bool = False
+    tile_size: int = 640
+    tile_overlap: float = 0.20
+    tile_nms_iou: float = 0.45
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

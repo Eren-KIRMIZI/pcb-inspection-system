@@ -202,6 +202,11 @@ export interface SettingsResponse {
   component_model: string | null
   conf_threshold: number
   class_thresholds_applied: boolean
+  detector_imgsz: number
+  tiling_enabled: boolean
+  tile_size: number
+  tile_overlap: number
+  tile_nms_iou: number
   component_conf_threshold: number
   component_imgsz: number
   reference_component_min_confidence: number
