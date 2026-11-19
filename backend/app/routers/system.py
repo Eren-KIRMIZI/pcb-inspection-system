@@ -13,9 +13,18 @@ from ..schemas import (
 )
 from ..services.components import get_component_detector, is_component_detector_loaded
 from ..services.detector import get_detector, is_detector_loaded
+from ..services.evaluation import load_evaluation
 from ..services.history import check_database
 
 router = APIRouter(tags=["system"])
+
+MEASURED_METRIC_LABELS = {
+    "Precision",
+    "Recall",
+    "False positive / False negative",
+    "Sınıf bazında precision / recall",
+    "Uygulama içi mAP50 / mAP50-95",
+}
 
 
 def _class_names(detector: object) -> list[str]:
@@ -30,6 +39,26 @@ def _class_names(detector: object) -> list[str]:
 def get_models() -> ModelPerformance:
     detector = get_detector()
     component_status = "active" if settings.component_model_path else "disabled"
+    evaluation = load_evaluation()
+    measured_in_app = evaluation is not None
+    unmeasured_metrics = [
+        metric
+        for metric in (
+            "Precision",
+            "Recall",
+            "Confusion matrix",
+            "False positive / False negative",
+            "Sınıf bazında precision / recall",
+            "Uygulama içi mAP50 / mAP50-95",
+        )
+        if not measured_in_app or metric not in MEASURED_METRIC_LABELS
+    ]
+    defect_note = (
+        "Metrikler model kartından alınmıştır; uygulama içinde yeniden ölçülmemiştir. "
+        "Sınıf bazlı eşikler thresholds.json dosyasından uygulanır."
+    )
+    if measured_in_app:
+        defect_note += " Gerçek test split'i üzerinde uygulama içi ölçüm de mevcuttur."
 
     models = [
         ModelCard(
@@ -42,10 +71,7 @@ def get_models() -> ModelPerformance:
             map50_95=0.657,
             source="Model kartı test seti (ParsaVictor/pcb-solder-defect-detection-yolo26)",
             classes=_class_names(detector),
-            note=(
-                "Metrikler model kartından alınmıştır; uygulama içinde yeniden ölçülmemiştir. "
-                "Sınıf bazlı eşikler thresholds.json dosyasından uygulanır."
-            ),
+            note=defect_note,
         ),
         ModelCard(
             id="component-detection",
@@ -74,16 +100,10 @@ def get_models() -> ModelPerformance:
     ]
 
     return ModelPerformance(
-        measured_in_app=False,
+        measured_in_app=measured_in_app,
+        evaluation=evaluation,
         models=models,
-        unmeasured_metrics=[
-            "Precision",
-            "Recall",
-            "Confusion matrix",
-            "False positive / False negative",
-            "Sınıf bazında precision / recall",
-            "Uygulama içi mAP50 / mAP50-95",
-        ],
+        unmeasured_metrics=unmeasured_metrics,
         limitations=[
             "solder_void sıklıkla insufficient_solder ile karışır.",
             "burn sınıfının recall değeri model kartına göre yaklaşık %62'dir.",

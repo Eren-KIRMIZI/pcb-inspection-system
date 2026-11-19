@@ -188,8 +188,47 @@ export interface ModelCard {
   note: string
 }
 
+export interface EvaluationScore {
+  precision: number
+  recall: number
+  f1: number
+  ap50: number
+  ap50_95: number
+  tp: number
+  fp: number
+  fn: number
+}
+
+export interface ClassEvaluation extends EvaluationScore {
+  class_name: string
+  support: number
+}
+
+export interface ModelEvaluation {
+  model_id: string
+  model_name: string
+  engine: string
+  split: string
+  dataset: string
+  evaluated_at: string
+  image_count: number
+  ground_truth_boxes: number
+  predicted_boxes: number
+  conf_threshold: number
+  class_thresholds_applied: boolean
+  imgsz: number
+  tiling_enabled: boolean
+  device: string
+  duration_seconds: number
+  mean_inference_ms: number
+  overall: EvaluationScore
+  classes: ClassEvaluation[]
+  classes_without_ground_truth: string[]
+}
+
 export interface ModelPerformance {
   measured_in_app: boolean
+  evaluation: ModelEvaluation | null
   models: ModelCard[]
   unmeasured_metrics: string[]
   limitations: string[]

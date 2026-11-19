@@ -105,4 +105,9 @@ Bu pakette çözülenler:
 
 Adım 19 uygulanmadı: rotasyon/konum analizi kapsam dışı kararı (D4) korundu; bbox'tan açı türetilmiyor.
 
-Kalanlar sırayla ele alınacak: D6 (21-22), D7/D8 (23). D4 kapsam dışı kararı nedeniyle uygulanmayacak.
+### Adım 21/22 — uygulama içi değerlendirme (`feat: add in-app model evaluation`)
+
+- **D6:** `backend/scripts/evaluate_model.py` offline CLI'si gerçek kusur modelini gerçek test split'i (686 görsel / 663 kutu) üzerinde değerlendirir. Uygulamanın `get_detector()` çağrısı kullanıldığı için `thresholds.json` sınıf eşikleri aynen uygulanır; mock motor aktifse ölçüm reddedilir.
+- `services/evaluation.py` COCO benzeri, güven sıralı bire-bir IoU eşleştirmesiyle precision, recall, F1, TP/FP/FN ve AP50/AP50-95 üretir; sınıf bazlı sonuçlar ve ortalama çıkarım süresi de kaydedilir. mAP yalnızca test split'inde ground truth bulunan sınıfların ortalamasıdır; `oxidation` sınıfı 0 kutuya sahip olduğu için `classes_without_ground_truth` içinde açıkça bildirilir.
+- Sonuç `data/evaluation/solder-defect-test.json` (gitignored) dosyasına yazılır. `/api/v1/models` yalnızca gerçek (`engine=real`) ve sağlam bir ölçüm dosyası varsa `measured_in_app=true` döner; aksi halde `false` kalır. Model kartı metrikleri değiştirilmez, iki kaynak ayrı gösterilir.
+- 10 yeni test eklendi (74 test toplam); CLI 5 görsellik smoke testinde gerçek modelle çalıştı.

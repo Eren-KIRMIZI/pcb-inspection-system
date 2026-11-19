@@ -61,6 +61,13 @@ class Settings(BaseSettings):
     tile_overlap: float = 0.20
     tile_nms_iou: float = 0.45
 
+    # Uygulama içi değerlendirme (AOI Engine 2.0 / adım 21-22)
+    # Sonuç data/evaluation/*.json altına yazılır; repo dışında tutulur.
+    evaluation_dataset_dir: Path = (
+        BASE_DIR / "datasets" / "pcb-solder-defect-detection" / "final_solder"
+    )
+    evaluation_output_dir: Path = BASE_DIR / "data" / "evaluation"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

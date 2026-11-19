@@ -233,8 +233,55 @@ class ModelCard(BaseModel):
     note: str
 
 
+class EvaluationScore(BaseModel):
+    """IoU 0.50 eşleştirmesinden hesaplanan metrikler."""
+
+    precision: float = Field(..., ge=0, le=1)
+    recall: float = Field(..., ge=0, le=1)
+    f1: float = Field(..., ge=0, le=1)
+    ap50: float = Field(..., ge=0, le=1)
+    ap50_95: float = Field(..., ge=0, le=1)
+    tp: int
+    fp: int
+    fn: int
+
+
+class ClassEvaluation(EvaluationScore):
+    class_name: str
+    support: int
+
+
+class ModelEvaluation(BaseModel):
+    """Gerçek model + gerçek test split'i ile üretilen ölçümün özeti.
+
+    Yalnızca ``engine == "real"`` kayıtları API'de ``measured_in_app=true``
+    yapar; mock çıktısından metrik üretilmez.
+    """
+
+    model_id: str
+    model_name: str
+    engine: str
+    split: str
+    dataset: str
+    evaluated_at: str
+    image_count: int
+    ground_truth_boxes: int
+    predicted_boxes: int
+    conf_threshold: float
+    class_thresholds_applied: bool
+    imgsz: int
+    tiling_enabled: bool
+    device: str
+    duration_seconds: float
+    mean_inference_ms: float
+    overall: EvaluationScore
+    classes: list[ClassEvaluation]
+    classes_without_ground_truth: list[str] = []
+
+
 class ModelPerformance(BaseModel):
     measured_in_app: bool
+    evaluation: ModelEvaluation | None = None
     models: list[ModelCard]
     unmeasured_metrics: list[str]
     limitations: list[str]
